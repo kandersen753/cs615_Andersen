@@ -26,14 +26,14 @@ int main (int argc, char *argv[])
 	double endTime;
 	int Count;
 
-	for (Count = 1; Count<10; Count++)
+	for (Count = 1; Count<500; Count++)
 	{
 		if (taskid == MASTER)
 		{
 			int* send = (int*)calloc(Count, sizeof(int));
 			startTime = MPI_Wtime();
-		   	MPI_Send(send, 1, MPI_INT, 1, 0, MPI_COMM_WORLD);
-		   	MPI_Recv(send, 1, MPI_INT, 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+		   	MPI_Send(send, Count, MPI_INT, 1, 0, MPI_COMM_WORLD);
+		   	MPI_Recv(send, Count, MPI_INT, 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 		   	endTime = MPI_Wtime();
 		   	free(send);
 		   	difference = endTime-startTime;
@@ -42,8 +42,8 @@ int main (int argc, char *argv[])
 		else if (taskid == 1)
 		{
 			int* recv = (int*)calloc(Count, sizeof(int));
-			MPI_Recv(recv, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-			MPI_Send(recv, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+			MPI_Recv(recv, Count, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			MPI_Send(recv, Count, MPI_INT, 0, 0, MPI_COMM_WORLD);
 			free(recv);
 		}
 	}	
