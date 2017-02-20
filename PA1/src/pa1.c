@@ -26,7 +26,7 @@ int main (int argc, char *argv[])
 	double endTime;
 	int Count;
 
-	for (Count = 1; Count<50000; Count++)
+	for (Count = 1; Count<3000; Count++)
 	{
 		if (taskid == MASTER)
 		{
