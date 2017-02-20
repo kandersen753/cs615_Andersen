@@ -32,8 +32,8 @@ int main (int argc, char *argv[])
 		{
 			int* send = (int*)calloc(Count, sizeof(int));
 			startTime = MPI_Wtime();
-		   	MPI_Send(send, Count, MPI_INT, 1, 0, MPI_COMM_WORLD);
-		   	MPI_Recv(send, Count, MPI_INT, 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+		   	MPI_Send(send, Count, MPI_INT, 17, 0, MPI_COMM_WORLD);
+		   	MPI_Recv(send, Count, MPI_INT, 17, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 		   	endTime = MPI_Wtime();
 		   	free(send);
 		   	difference = endTime-startTime;
