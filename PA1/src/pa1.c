@@ -25,30 +25,33 @@ int main (int argc, char *argv[])
 	double startTime;
 	double endTime;
 	int Count;
-
+	int Iteration;
 	for (Count = 1; Count<3000; Count++)
 	{
-		if (taskid == MASTER)
+		for (Iteration = 0; Iteration < 100; Iteration++)
 		{
-			int* send = (int*)calloc(Count, sizeof(int));
-			startTime = MPI_Wtime();
-		   	MPI_Send(send, Count, MPI_INT, 17, 0, MPI_COMM_WORLD);
-		   	MPI_Recv(send, Count, MPI_INT, 17, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-		   	endTime = MPI_Wtime();
-		   	free(send);
-		   	difference = endTime-startTime;
-		   	printf("Time difference of loop %d is %f\n", Count, difference);
-		}
-		else if (taskid == 17)
-		{
-			int* recv = (int*)calloc(Count, sizeof(int));
-			MPI_Recv(recv, Count, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-			MPI_Send(recv, Count, MPI_INT, 0, 0, MPI_COMM_WORLD);
-			free(recv);
-		}
-		else 
-		{
-			break;
+			if (taskid == MASTER)
+			{
+				int* send = (int*)calloc(Count, sizeof(int));
+				startTime = MPI_Wtime();
+			   	MPI_Send(send, Count, MPI_INT, numtasks, 0, MPI_COMM_WORLD);
+			   	MPI_Recv(send, Count, MPI_INT, numtasks, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			   	endTime = MPI_Wtime();
+			   	free(send);
+			   	difference = endTime-startTime;
+			   	printf("Time difference of loop %d is %f\n", Count, difference);
+			}
+			else if (taskid == numtasks)
+			{
+				int* recv = (int*)calloc(Count, sizeof(int));
+				MPI_Recv(recv, Count, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+				MPI_Send(recv, Count, MPI_INT, 0, 0, MPI_COMM_WORLD);
+				free(recv);
+			}
+			else 
+			{
+				break;
+			}
 		}
 	}	
 	MPI_Finalize();
