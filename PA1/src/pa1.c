@@ -34,14 +34,14 @@ int main (int argc, char *argv[])
 			{
 				int* send = (int*)calloc(Count, sizeof(int));
 				startTime = MPI_Wtime();
-			   	MPI_Send(send, Count, MPI_INT, numtasks, 0, MPI_COMM_WORLD);
-			   	MPI_Recv(send, Count, MPI_INT, numtasks, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			   	MPI_Send(send, Count, MPI_INT, numtasks-1, 0, MPI_COMM_WORLD);
+			   	MPI_Recv(send, Count, MPI_INT, numtasks-1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 			   	endTime = MPI_Wtime();
 			   	free(send);
 			   	difference = endTime-startTime;
 			   	printf("Time difference of loop %d is %f\n", Count, difference);
 			}
-			else if (taskid == numtasks)
+			else if (taskid == (numtasks-1))
 			{
 				int* recv = (int*)calloc(Count, sizeof(int));
 				MPI_Recv(recv, Count, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
