@@ -30,19 +30,21 @@ int main (int argc, char *argv[])
 	{
 		if (taskid == MASTER)
 		{
-			int* vals = (int*)calloc(Count, sizeof(int));
+			int* send = (int*)calloc(Count, sizeof(int));
 			startTime = MPI_Wtime();
-		   	MPI_Send(vals, 1, MPI_INT, 1, 0, MPI_COMM_WORLD);
-		   	MPI_Recv(vals, 1, MPI_INT, 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+		   	MPI_Send(send, 1, MPI_INT, 1, 0, MPI_COMM_WORLD);
+		   	MPI_Recv(send, 1, MPI_INT, 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 		   	endTime = MPI_Wtime();
+		   	free(send);
 		   	difference = endTime-startTime;
 		   	printf("Time difference of loop %d is %f\n", Count, difference);
-		   	free(send);
 		}
 		else if (taskid == 1)
 		{
-			MPI_Recv(vals, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-			MPI_Send(vals, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+			int* recv = (int*)calloc(Count, sizeof(int));
+			MPI_Recv(recv, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			MPI_Send(recv, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+			free(recv);
 		}
 	}	
 	MPI_Finalize();
