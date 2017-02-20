@@ -39,12 +39,16 @@ int main (int argc, char *argv[])
 		   	difference = endTime-startTime;
 		   	printf("Time difference of loop %d is %f\n", Count, difference);
 		}
-		else if (taskid == 1)
+		else if (taskid == 17)
 		{
 			int* recv = (int*)calloc(Count, sizeof(int));
 			MPI_Recv(recv, Count, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 			MPI_Send(recv, Count, MPI_INT, 0, 0, MPI_COMM_WORLD);
 			free(recv);
+		}
+		else 
+		{
+			break;
 		}
 	}	
 	MPI_Finalize();
