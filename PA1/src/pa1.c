@@ -66,7 +66,7 @@ int main (int argc, char *argv[])
 			   	difference = endTime-startTime;
 
 			   	//prints time for current iteration
-			   	printf("Time difference of loop %d is %f\n", Count, difference);
+			   	printf("%d , %f\n", Count, difference);
 			}
 			else if (taskid == (numtasks-1))
 			{
