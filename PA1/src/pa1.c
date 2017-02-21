@@ -39,9 +39,12 @@ int main (int argc, char *argv[])
 	for (Count = 1; Count<3000; Count++)
 	{
 
-		//gets start time
-		startTime = MPI_Wtime();
-		
+		if (taskid == MASTER)
+		{
+			//gets start time
+			startTime = MPI_Wtime();
+		}
+
 		//test number for the number of integers
 		for (Iteration = 0; Iteration < 100; Iteration++)
 		{
