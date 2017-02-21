@@ -75,11 +75,13 @@ int main (int argc, char *argv[])
 				break;
 			}
 		}
-		
-		//end time
-		endTime = MPI_Wtime();
+		if (taskid == MASTER)
+		{
+			//end time
+			endTime = MPI_Wtime();
 
-	   	printf("%d , %f\n", Count, (endTime-startTime)/100);
+	   		printf("%d , %f\n", Count, (endTime-startTime)/100);
+		}
 	}	
 	MPI_Finalize();
 	return 0;
