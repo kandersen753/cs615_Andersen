@@ -32,6 +32,9 @@ int main (int argc, char *argv[])
 	double startTime;
 	double endTime;
 
+	double forAverage[100];
+	double average;
+
 	//loop counters
 	int Count;
 	int Iteration;
@@ -39,6 +42,7 @@ int main (int argc, char *argv[])
 	//number of integers being sent
 	for (Count = 1; Count<3000; Count++)
 	{
+		average = 0;
 		//test number for the number of integers
 		for (Iteration = 0; Iteration < 100; Iteration++)
 		{
@@ -65,8 +69,7 @@ int main (int argc, char *argv[])
 			   	//total time it took to send and receive message
 			   	difference = endTime-startTime;
 
-			   	//prints time for current iteration
-			   	printf("%d , %f\n", Count, difference);
+			   	forAverage[Iteration] = difference;
 			}
 			else if (taskid == (numtasks-1))
 			{
@@ -84,6 +87,17 @@ int main (int argc, char *argv[])
 				break;
 			}
 		}
+
+		//calculate average
+		for (Iteration = 0; Iteration<100; Iteration++;)
+		{
+			average += forAverage[Iteration];
+		}
+
+		average = average/100;
+
+		//prints time for current iteration
+	   	printf("%d , %f\n", Count, average);
 	}	
 	MPI_Finalize();
 	return 0;
