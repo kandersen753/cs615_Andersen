@@ -32,9 +32,6 @@ int main (int argc, char *argv[])
 	double startTime;
 	double endTime;
 
-	double forAverage[100];
-	double average;
-
 	//loop counters
 	int Count;
 	int Iteration;
@@ -43,6 +40,10 @@ int main (int argc, char *argv[])
 	for (Count = 1; Count<3000; Count++)
 	{
 		average = 0;
+
+		//gets start time
+		startTime = MPI_Wtime();
+		
 		//test number for the number of integers
 		for (Iteration = 0; Iteration < 100; Iteration++)
 		{
@@ -51,25 +52,14 @@ int main (int argc, char *argv[])
 				//allocates an array of size Count
 				int* send = (int*)calloc(Count, sizeof(int));
 
-				//gets start time
-				startTime = MPI_Wtime();
-
 				//sends array size count to the last available node for my total size
 			   	MPI_Send(send, Count, MPI_INT, numtasks-1, 0, MPI_COMM_WORLD);
 
 			   	//receives a message back from the last node
 			   	MPI_Recv(send, Count, MPI_INT, numtasks-1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 			   	
-			   	//end time
-			   	endTime = MPI_Wtime();
-
 			   	//dealloates array
 			   	free(send);
-
-			   	//total time it took to send and receive message
-			   	difference = endTime-startTime;
-
-			   	forAverage[Iteration] = difference;
 			}
 			else if (taskid == (numtasks-1))
 			{
@@ -87,17 +77,11 @@ int main (int argc, char *argv[])
 				break;
 			}
 		}
+		
+		//end time
+		endTime = MPI_Wtime();
 
-		//calculate average
-		for (Iteration = 0; Iteration<100; Iteration++)
-		{
-			average += forAverage[Iteration];
-		}
-
-		average = average/100;
-
-		//prints time for current iteration
-	   	printf("%d , %f\n", Count, average);
+	   	printf("%d , %f\n", Count, (endTime-startTime)/100);
 	}	
 	MPI_Finalize();
 	return 0;
