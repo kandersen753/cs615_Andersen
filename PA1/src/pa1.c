@@ -89,7 +89,7 @@ int main (int argc, char *argv[])
 		}
 
 		//calculate average
-		for (Iteration = 0; Iteration<100; Iteration++;)
+		for (Iteration = 0; Iteration<100; Iteration++)
 		{
 			average += forAverage[Iteration];
 		}
