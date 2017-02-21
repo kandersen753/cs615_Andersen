@@ -28,7 +28,6 @@ int main (int argc, char *argv[])
 	MPI_Get_processor_name(hostname, &len);
 	
 	//variables for timing
-	double difference;
 	double startTime;
 	double endTime;
 
@@ -39,7 +38,6 @@ int main (int argc, char *argv[])
 	//number of integers being sent
 	for (Count = 1; Count<3000; Count++)
 	{
-		average = 0;
 
 		//gets start time
 		startTime = MPI_Wtime();
