@@ -28,8 +28,8 @@ int main (int argc, char *argv[])
 	MPI_Get_processor_name(hostname, &len);
 	
 	//variables for timing
-	double startTime;
-	double endTime;
+	double startTime = 0.0;
+	double endTime = 0.0;
 
 	//loop counters
 	int Count;
