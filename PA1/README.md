@@ -29,7 +29,7 @@ cd ..
 ```
 
 Now you can run one of 3 bash scripts, enter each as following in order to run it
-Each bash script is limited to a 5 minute time limit, so if for whatever reason the program continues to execute, it will automatically be cut off at 5 minutes.  Each script will also run through sending 1-3000 integers to the other processor 100 times for each number of ints.  The program then takes the average to get a resonable number.
+Each bash script is limited to a 5 minute time limit, so if for whatever reason the program continues to execute, it will automatically be cut off at 5 minutes.  Each script will also run through sending 1-3000 integers to the other processor 100 times for each number of ints.  The program then takes the average to get a resonable number.  Before running an sbatch file, ensure the you are in the main directory of PA1.
 
 ```bash
 sbatch One_box.sh
