@@ -16,8 +16,8 @@ struct Complex
 	float imag;
 }complex;
 
-int display_width = 500;
-int display_height = 500;
+int display_width = 5000;
+int display_height = 5000;
 
 int cal_pixel(struct Complex c);
 
