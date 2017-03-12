@@ -44,11 +44,8 @@ int main (int argc, char *argv[])
 
 	const char filePath[] = "../bin/attempt.jpeg";
 
-	 unsigned char** colors = new unsigned char*[500];
-	 for (int i=0; i<500; i++)
-	 {
-	 	colors[i] = new unsigned char[500];
-	 }
+	 unsigned char colors[500][500];
+
 
 	 unsigned char onedcolors[500*500];
 
