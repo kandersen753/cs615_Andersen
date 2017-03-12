@@ -45,15 +45,15 @@ int main (int argc, char *argv[])
 	//loop counters
 	int xVal;
 	int yVal;
-
+printf("segfault0\n");
 	int colors[display_height][display_width];
-
+printf("segfault0\n");
 
 	int onedcolors[display_height*display_width];
-
+printf("segfault0\n");
 	struct Complex c;
 
-
+printf("segfault0\n");
 	printf("segfault0\n");
 	float real_min = -2.0;
 	float real_max = 1.0;
