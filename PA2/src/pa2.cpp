@@ -54,14 +54,16 @@ int main (int argc, char *argv[])
 	struct Complex c;
 
 
-	
+	printf("segfault0\n");
 	float real_min = -2.0;
 	float real_max = 1.0;
 	float imag_min = -1.2;
 	float imag_max = imag_min+(real_max-real_min)*display_height/display_width;
+	printf("segfault1\n");
 
 	float scale_real = (real_max-real_min) / display_width;
 	float scale_imag = (imag_max-imag_min) / display_height;
+	printf("segfault2\n");
 
 	for (xVal=0; xVal < display_width; xVal++)
 		{
@@ -70,7 +72,6 @@ int main (int argc, char *argv[])
 				c.real = real_min + ((float) xVal*scale_real);
 				c.imag = imag_min + ((float) yVal*scale_imag);
 				colors[xVal][yVal] = cal_pixel(c);
-				printf("%d\n", colors[xVal][yVal]);
 			}
 		}
 
