@@ -16,8 +16,8 @@ struct Complex
 	float imag;
 }complex;
 
-int display_width = 500;
-int display_height = 500;
+int display_width = 20000;
+int display_height = 20000;
 
 int cal_pixel(struct Complex c);
 
@@ -46,10 +46,10 @@ int main (int argc, char *argv[])
 	int xVal;
 	int yVal;
 
-	int colors[20000][20000];
+	int colors[display_height][display_width];
 
 
-	int onedcolors[20000*20000];
+	int onedcolors[display_height*display_width];
 
 	struct Complex c;
 
