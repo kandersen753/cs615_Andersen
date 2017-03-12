@@ -25,7 +25,7 @@ void writeImage(int* img);
 
 int main (int argc, char *argv[])
 {
-	/*int   numtasks, taskid, len;
+	int   numtasks, taskid, len;
 	char hostname[MPI_MAX_PROCESSOR_NAME];
 
 	//gets numtasks and taskid
@@ -36,7 +36,7 @@ int main (int argc, char *argv[])
 	MPI_Comm_rank(MPI_COMM_WORLD,&taskid);
 
 	//gets the hostname
-	MPI_Get_processor_name(hostname, &len);*/
+	MPI_Get_processor_name(hostname, &len);
 	
 	//variables for timing
 	//double startTime = 0.0;
@@ -70,10 +70,12 @@ int main (int argc, char *argv[])
 				c.real = real_min + ((float) xVal*scale_real);
 				c.imag = imag_min + ((float) yVal*scale_imag);
 				colors[xVal][yVal] = cal_pixel(c);
+				printf("%d\n", colors[xVal][yVal]);
 			}
 		}
 
 	int counter = 0;
+
 	for (int x=0; x< 500; x++)
 	{
 		for (int y=0; y< 500; y++, counter++)
@@ -86,7 +88,7 @@ int main (int argc, char *argv[])
 
 
 	
-	//MPI_Finalize();
+	MPI_Finalize();
 	return 0;
 }
 
