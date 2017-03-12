@@ -8,7 +8,9 @@
 #include "mpi.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <iostream>
 #define  MASTER		0
+using namespace std;
 
 struct Complex
 {
@@ -48,13 +50,13 @@ int main (int argc, char *argv[])
 	int xVal;
 	int yVal;
 
-	int** colors= new int*[display_width];
+	int** colors= new int* [(int)display_width];
 	for (int i=0; i<display_width; i++)
 	{
-		colors[i] = new int[display_height];
+		colors[i] = new int [(int)display_height];
 	}
 
-	int* oneDcolors = new int[display_height*display_width];
+	int* oneDcolors = new int [(int)(display_height*display_width)];
 
 	struct Complex c;
 
