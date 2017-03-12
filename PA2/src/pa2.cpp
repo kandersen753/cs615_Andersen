@@ -25,7 +25,7 @@ void writeImage(int* img);
 
 int main (int argc, char *argv[])
 {
-	int   numtasks, taskid, len;
+	/*int   numtasks, taskid, len;
 	char hostname[MPI_MAX_PROCESSOR_NAME];
 
 	//gets numtasks and taskid
@@ -36,7 +36,7 @@ int main (int argc, char *argv[])
 	MPI_Comm_rank(MPI_COMM_WORLD,&taskid);
 
 	//gets the hostname
-	MPI_Get_processor_name(hostname, &len);
+	MPI_Get_processor_name(hostname, &len);*/
 	
 	//variables for timing
 	//double startTime = 0.0;
