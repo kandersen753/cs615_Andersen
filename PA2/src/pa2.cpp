@@ -16,8 +16,8 @@ struct Complex
 	float imag;
 }complex;
 
-int display_width = 2000;
-int display_height = 2000;
+int display_width = 500;
+int display_height = 500;
 
 int cal_pixel(struct Complex c);
 
@@ -45,25 +45,24 @@ int main (int argc, char *argv[])
 	//loop counters
 	int xVal;
 	int yVal;
-printf("segfault0\n");
+
 	int colors[display_height][display_width];
-printf("segfault0\n");
+
 
 	int onedcolors[display_height*display_width];
-printf("segfault0\n");
+
 	struct Complex c;
 
-printf("segfault0\n");
-	printf("segfault0\n");
+
 	float real_min = -2.0;
 	float real_max = 1.0;
 	float imag_min = -1.2;
 	float imag_max = imag_min+(real_max-real_min)*display_height/display_width;
-	printf("segfault1\n");
+
 
 	float scale_real = (real_max-real_min) / display_width;
 	float scale_imag = (imag_max-imag_min) / display_height;
-	printf("segfault2\n");
+
 
 	for (xVal=0; xVal < display_width; xVal++)
 		{
