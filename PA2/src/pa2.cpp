@@ -5,10 +5,9 @@
 * AUTHOR: Kurt Andersen
 * LAST REVISED: 03/12/2017
 ******************************************************************************/
-//#include "mpi.h"
+#include "mpi.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "PIMFuncs.h"
 #define  MASTER		0
 
 struct Complex
@@ -17,7 +16,12 @@ struct Complex
 	float imag;
 }complex;
 
+int display_width = 500;
+int display_height = 500;
+
 int cal_pixel(struct Complex c);
+
+void writeImage(int* img);
 
 int main (int argc, char *argv[])
 {
@@ -34,25 +38,22 @@ int main (int argc, char *argv[])
 	//gets the hostname
 	MPI_Get_processor_name(hostname, &len);*/
 	
-		//variables for timing
-	double startTime = 0.0;
-	double endTime = 0.0;
+	//variables for timing
+	//double startTime = 0.0;
+	//double endTime = 0.0;
 
 	//loop counters
 	int xVal;
 	int yVal;
 
-	const char filePath[] = "../bin/attempt.jpeg";
-
-	 unsigned char colors[500][500];
+	int colors[500][500];
 
 
-	 unsigned char onedcolors[500*500];
+	int onedcolors[500*500];
 
 	struct Complex c;
 
-	const int display_width = 500;
-	const int display_height = 500;
+
 	
 	float real_min = -2.0;
 	float real_max = -2.0;
@@ -80,7 +81,7 @@ int main (int argc, char *argv[])
 			onedcolors[counter] = colors[x][y];
 		}
 	}
-	pim_write_black_and_white(filePath, display_width, display_height, onedcolors);
+	writeImage(onedcolors);
 
 
 
@@ -109,4 +110,23 @@ int cal_pixel(struct Complex c)
 		count++;
 	} while ((lengthsq < 4.0) && (count < max_iter));
 	return count;
+}
+
+void writeImage(int* img)
+{
+	int row, col;
+
+	FILE* fp = fopen("../bin/image.ppm", "wb");
+
+	fprintf(fp, "P5\n# \n%d %d\n255\n", display_width, display_height);
+
+	for (row =0; row < display_height; row++)
+	{
+		for (col=0; col < display_width; col++)
+		{
+			fprintf (fp, "%c", (unsigned char)img[row*display_width+col]);
+		}
+	}
+
+	fclose(fp);
 }
