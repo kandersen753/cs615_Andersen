@@ -1,5 +1,5 @@
 # set flags and compiler, as well as file var
-CC=mpicc
+CC=mpic++
 CXXFLAGS=-Wall
 LIBS=-lpmi
 # feel free to either add files here (for more compilcated src's), or create more vars, or just manually type them in. Up to you.
