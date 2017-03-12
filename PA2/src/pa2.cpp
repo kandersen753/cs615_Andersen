@@ -121,7 +121,7 @@ void writeImage(int* img, int display_width, int display_height)
 {
 	int row, col;
 
-	FILE* fp = fopen("../bin/image.ppm", "wb");
+	FILE* fp = fopen("../bin/image2.ppm", "wb");
 
 	fprintf(fp, "P5\n# \n%d %d\n255\n", display_width, display_height);
 
