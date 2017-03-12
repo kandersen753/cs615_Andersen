@@ -16,15 +16,16 @@ struct Complex
 	float imag;
 }complex;
 
-int display_width = 5000;
-int display_height = 5000;
+
 
 int cal_pixel(struct Complex c);
 
-void writeImage(int* img);
+void writeImage(int* img, int display_width, int display_height);
 
 int main (int argc, char *argv[])
 {
+	int display_width = 5000;
+	int display_height = 5000;
 	printf("ASS\n");
 	int   numtasks, taskid, len;
 	char hostname[MPI_MAX_PROCESSOR_NAME];
@@ -85,7 +86,7 @@ int main (int argc, char *argv[])
 			onedcolors[counter] = colors[x][y];
 		}
 	}
-	writeImage(onedcolors);
+	writeImage(onedcolors, display_width, display_height);
 
 
 
@@ -116,7 +117,7 @@ int cal_pixel(struct Complex c)
 	return count;
 }
 
-void writeImage(int* img)
+void writeImage(int* img, int display_width, int display_height)
 {
 	int row, col;
 
