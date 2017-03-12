@@ -14,7 +14,7 @@ $(OUTPUT): $(FILE)	PIMFuncs.o
 	$(CC)	PIMFuncs.o $(CXXFLAGS) -o $(OUTPUT) $(FILE) $(LIBS)
 
 PIMFuncs.o:	../src/PIMFuncs.cpp
-	$(CC)	$(CXXFLAGS)	.../src/PIMFuncs.cpp	-o	PIMFuncs.o
+	$(CC)	$(CXXFLAGS)	../src/PIMFuncs.cpp	-o	PIMFuncs.o
 
 clean:
 	-@if rm $(OUTPUT) 2>/dev/null || true; then echo "Cleaned"; else echo "Nothing to clean"; fi
