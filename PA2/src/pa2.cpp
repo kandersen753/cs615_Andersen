@@ -25,6 +25,7 @@ void writeImage(int* img);
 
 int main (int argc, char *argv[])
 {
+	printf("ASS\n");
 	int   numtasks, taskid, len;
 	char hostname[MPI_MAX_PROCESSOR_NAME];
 
@@ -48,8 +49,9 @@ int main (int argc, char *argv[])
 
 	int colors[display_height][display_width];
 
+	int oned = display_height*display_width;
 
-	int onedcolors[display_height*display_width];
+	int onedcolors[oned];
 
 	struct Complex c;
 
