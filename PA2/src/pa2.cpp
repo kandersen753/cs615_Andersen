@@ -56,9 +56,9 @@ int main (int argc, char *argv[])
 
 	
 	float real_min = -2.0;
-	float real_max = -2.0;
-	float imag_min = 2.0;
-	float imag_max = 2.0;
+	float real_max = 1.0;
+	float imag_min = -1.2;
+	float imag_max = imag_min+(real_max-real_min)*display_height/display_width;
 
 	float scale_real = (real_max-real_min) / display_width;
 	float scale_imag = (imag_max-imag_min) / display_height;
