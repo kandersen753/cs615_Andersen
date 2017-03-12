@@ -5,9 +5,10 @@
 * AUTHOR: Kurt Andersen
 * LAST REVISED: 03/12/2017
 ******************************************************************************/
-#include "mpi.h"
+//#include "mpi.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include "PIMFuncs.h"
 #define  MASTER		0
 
 struct Complex
@@ -20,7 +21,7 @@ int cal_pixel(struct Complex c);
 
 int main (int argc, char *argv[])
 {
-	int   numtasks, taskid, len;
+	/*int   numtasks, taskid, len;
 	char hostname[MPI_MAX_PROCESSOR_NAME];
 
 	//gets numtasks and taskid
@@ -31,9 +32,9 @@ int main (int argc, char *argv[])
 	MPI_Comm_rank(MPI_COMM_WORLD,&taskid);
 
 	//gets the hostname
-	MPI_Get_processor_name(hostname, &len);
+	MPI_Get_processor_name(hostname, &len);*/
 	
-	//variables for timing
+		//variables for timing
 	double startTime = 0.0;
 	double endTime = 0.0;
 
@@ -41,13 +42,20 @@ int main (int argc, char *argv[])
 	int xVal;
 	int yVal;
 
+	const char filePath[] = "../bin/attempt.jpeg";
 
-	float color;
-	
+	 unsigned char** colors = new unsigned char*[500];
+	 for (int i=0; i<500; i++)
+	 {
+	 	colors[i] = new unsigned char[500];
+	 }
+
+	 unsigned char onedcolors[500*500];
+
 	struct Complex c;
 
-	int display_width = 500;
-	int display_height = 500;
+	const int display_width = 500;
+	const int display_height = 500;
 	
 	float real_min = -2.0;
 	float real_max = -2.0;
@@ -63,14 +71,24 @@ int main (int argc, char *argv[])
 			{
 				c.real = real_min + ((float) xVal*scale_real);
 				c.imag = imag_min + ((float) yVal*scale_imag);
-				color = cal_pixel(c);
+				colors[xVal][yVal] = cal_pixel(c);
 			}
 		}
+
+	int counter = 0;
+	for (int x=0; x< 500; x++)
+	{
+		for (int y=0; y< 500; y++, counter++)
+		{
+			onedcolors[counter] = colors[x][y];
+		}
+	}
+	pim_write_black_and_white(filePath, display_width, display_height, onedcolors);
 
 
 
 	
-	MPI_Finalize();
+	//MPI_Finalize();
 	return 0;
 }
 
