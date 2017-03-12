@@ -76,9 +76,9 @@ int main (int argc, char *argv[])
 
 	int counter = 0;
 
-	for (int x=0; x< 500; x++)
+	for (int x=0; x< display_width; x++)
 	{
-		for (int y=0; y< 500; y++, counter++)
+		for (int y=0; y< display_height; y++, counter++)
 		{
 			onedcolors[counter] = colors[x][y];
 		}
