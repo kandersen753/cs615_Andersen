@@ -48,11 +48,13 @@ int main (int argc, char *argv[])
 	int xVal;
 	int yVal;
 
-	int colors[display_height][display_width];
+	int** colors= new int*[display_width];
+	for (int i=0; i<display_width; i++)
+	{
+		colors[i] = new int[display_height];
+	}
 
-	int oned = display_height*display_width;
-
-	int onedcolors[oned];
+	int* oneDcolors = new int[display_height*display_width];
 
 	struct Complex c;
 
@@ -83,10 +85,10 @@ int main (int argc, char *argv[])
 	{
 		for (int y=0; y< display_height; y++, counter++)
 		{
-			onedcolors[counter] = colors[x][y];
+			oneDcolors[counter] = colors[x][y];
 		}
 	}
-	writeImage(onedcolors, display_width, display_height);
+	writeImage(oneDcolors, display_width, display_height);
 
 
 
