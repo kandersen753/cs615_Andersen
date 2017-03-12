@@ -46,10 +46,10 @@ int main (int argc, char *argv[])
 	int xVal;
 	int yVal;
 
-	int colors[500][500];
+	int colors[20000][20000];
 
 
-	int onedcolors[500*500];
+	int onedcolors[20000*20000];
 
 	struct Complex c;
 
