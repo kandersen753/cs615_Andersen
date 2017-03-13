@@ -177,6 +177,7 @@ int main (int argc, char *argv[])
 
 		if(taskid == MASTER){
 				//local vars
+				unsigned char* disp = new unsigned char [display_height*display_width];
 				float delta, start, end;
 				int row = 0;
 				int count = 0;
