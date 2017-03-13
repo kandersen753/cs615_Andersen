@@ -28,8 +28,8 @@ void loadRow(int row, int width, int* data, int* display);
 
 int main (int argc, char *argv[])
 {
-	int display_width = 5000;
-	int display_height = 5000;
+	int display_width = 500;
+	int display_height = 500;
 
 	int   numtasks, taskid, len;
 	char hostname[MPI_MAX_PROCESSOR_NAME];
