@@ -10,6 +10,9 @@
 #include <stdlib.h>
 #include <iostream>
 #define  MASTER		0
+#define DATA_TAG 0
+#define TERMINATE_TAG 1
+#define REQ_TAG 2
 using namespace std;
 
 struct Complex
@@ -71,12 +74,12 @@ int main (int argc, char *argv[])
 
 
 	//master tasks
-	if (taskid == MASTER)
+	/*if (taskid == MASTER)
 	{
 		//local vars
 		int row = 0;
 		int count = 0;
-		int tracker[numtasks]; /*Tracks what row a process is processing */
+		int tracker[numtasks]; //Tracks what row a process is processing *
 		MPI_Status status;
 		int* rowBuffer;
 		
@@ -170,7 +173,109 @@ int main (int argc, char *argv[])
 		}
 
 		delete [] pxlBuff;;
-	}
+	}*/
+
+		if(myid == MASTER){
+				//local vars
+				int row = 0;
+				int count = 0;
+				int rowTracker[numprocs]; /*Tracks what row a process is processing */
+				MPI_Status status;
+				unsigned char* rowBuffer;
+				
+				
+		  
+		  
+				//allocate space for arrays
+				rowBuffer = new unsigned char [display_width];
+				disp = new unsigned char [display_height * display_width];
+		  
+				start = MPI_Wtime();
+				
+				//send rows to each process initially
+				for (int proc = 1; proc < numprocs; proc++){
+						MPI_Send(&row, 1, MPI_INT, proc, DATA_TAG, MPI_COMM_WORLD);
+						rowTracker[proc] = row;
+						row++;
+						count++;
+		  
+				}
+		  
+				//handle the returned rows and reassign tasks from the pool
+				do{
+						//I need data about recieved data
+						MPI_Recv(rowBuffer, display_width, MPI_UNSIGNED_CHAR, MPI_ANY_SOURCE, REQ_TAG, MPI_COMM_WORLD,
+						&status);
+						count --;
+						
+						//transfer data recieved into our display array
+						loadRow(rowTracker[status.MPI_SOURCE], display_width, rowBuffer, disp);	    
+				
+						//while we still have unprocessed rows
+						//send work to various processes
+						if(row < display_height){
+							MPI_Send(&row, 1, MPI_INT, status.MPI_SOURCE, DATA_TAG, MPI_COMM_WORLD);
+							rowTracker[status.MPI_SOURCE] = row;
+							row++;
+							count++;
+						} 
+						else {
+							MPI_Send(&row, 1, MPI_INT, status.MPI_SOURCE, TERMINATE_TAG, MPI_COMM_WORLD);
+						}
+		  
+				}while(count > 0);
+		  
+				end = MPI_Wtime();
+		  
+				delta = end - start;
+		  
+				std::cout <<  display_height << ',' << display_width << ',' << delta << ',' << numprocs << std::endl;
+		  
+				pim_write_black_and_white(argv[3], display_width, display_height, disp);
+			
+			  	delete [] rowBuffer;
+			  	delete [] disp;
+				
+			}
+		  
+			//
+			// SLAVES
+			//
+			
+			if(myid > MASTER){
+				int row;
+				MPI_Status status;
+				unsigned char *pxlBuff;
+				
+				
+		  
+				//allocate space for the buffer we are sending out
+				pxlBuff = new unsigned char [display_width];
+				
+				MPI_Recv(&row, 1, MPI_INT, MASTER, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+				
+				while(status.MPI_TAG == DATA_TAG){
+		  
+				
+				//process a row of pixels
+				c.imag = imag_min + row * (imag_max - imag_min)/display_height;
+				for(int pxlCol = 0; pxlCol < display_width; pxlCol++){
+					c.real = real_min + pxlCol * (real_max - real_min)/display_width;
+		  
+					pxlBuff[pxlCol] = (unsigned char)calcPixel(c);
+				}
+				
+				//send off row
+				MPI_Send(pxlBuff, display_width, MPI_UNSIGNED_CHAR, MASTER, REQ_TAG, MPI_COMM_WORLD);
+			
+				
+				MPI_Recv(&row, 1, MPI_INT, MASTER, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+				}
+
+				delete [] pxlBuff;
+			}
+		
+	    }
 	
 	MPI_Finalize();
 	return 0;
