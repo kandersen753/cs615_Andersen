@@ -84,13 +84,13 @@ int main (int argc, char *argv[])
   
   
 		//allocate space for arrays
-		rowBuffer = new unsigned char [display_width];
-		oneDcolors = new unsigned char [display_width*display_height];
+		rowBuffer = new int [display_width];
+		oneDcolors = new int [display_width*display_height];
   
 		startTime = MPI_Wtime();
 		
 		//send rows to each process initially
-		for (int currentProccess = 1; currentProccess < numcurrentProccesss; currentProccess++){
+		for (int currentProccess = 1; currentProccess < numtasks; currentProccess++){
 				MPI_Send(&row, 1, MPI_INT, currentProccess, 0, MPI_COMM_WORLD);
 				tracker[currentProccess] = row;
 				row++;
@@ -145,7 +145,7 @@ int main (int argc, char *argv[])
 		
   
 		//allocate space for the buffer we are sending out
-		pxlBuff = new unsigned char [display_width];
+		pxlBuff = new int [display_width];
 		
 		MPI_Recv(&row, 1, MPI_INT, MASTER, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 		
@@ -159,7 +159,7 @@ int main (int argc, char *argv[])
 		//calculates each x value
 		for(int pxlCol = 0; pxlCol < display_width; pxlCol++){
 			c.real = real_min + pxlCol * scale_real;
-			pxlBuff[pxlCol] = calcPixel(c);
+			pxlBuff[pxlCol] = cal_Pixel(c);
 		}
 		
 		//send off row
@@ -202,7 +202,7 @@ void writeImage(int* img, int display_width, int display_height)
 {
 	int row, col;
 
-	FILE* fp = fopen("../bin/image2.ppm", "wb");
+	FILE* fp = fopen("../bin/imageP.ppm", "wb");
 
 	fprintf(fp, "P5\n# \n%d %d\n255\n", display_width, display_height);
 
