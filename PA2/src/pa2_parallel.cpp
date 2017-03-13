@@ -175,11 +175,11 @@ int main (int argc, char *argv[])
 		delete [] pxlBuff;;
 	}*/
 
-		if(myid == MASTER){
+		if(taskid == MASTER){
 				//local vars
 				int row = 0;
 				int count = 0;
-				int rowTracker[numprocs]; /*Tracks what row a process is processing */
+				int rowTracker[numtasks]; /*Tracks what row a process is processing */
 				MPI_Status status;
 				unsigned char* rowBuffer;
 				
@@ -193,7 +193,7 @@ int main (int argc, char *argv[])
 				start = MPI_Wtime();
 				
 				//send rows to each process initially
-				for (int proc = 1; proc < numprocs; proc++){
+				for (int proc = 1; proc < numtasks; proc++){
 						MPI_Send(&row, 1, MPI_INT, proc, DATA_TAG, MPI_COMM_WORLD);
 						rowTracker[proc] = row;
 						row++;
@@ -229,7 +229,7 @@ int main (int argc, char *argv[])
 		  
 				delta = end - start;
 		  
-				std::cout <<  display_height << ',' << display_width << ',' << delta << ',' << numprocs << std::endl;
+				std::cout <<  display_height << ',' << display_width << ',' << delta << ',' << numtasks << std::endl;
 		  
 				pim_write_black_and_white(argv[3], display_width, display_height, disp);
 			
@@ -242,7 +242,7 @@ int main (int argc, char *argv[])
 			// SLAVES
 			//
 			
-			if(myid > MASTER){
+			if(taskid > MASTER){
 				int row;
 				MPI_Status status;
 				unsigned char *pxlBuff;
