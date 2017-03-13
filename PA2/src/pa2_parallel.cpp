@@ -27,7 +27,7 @@ int cal_pixel(struct Complex c);
 
 void writeImage(unsigned char* img, int display_width, int display_height);
 
-void loadRow(int row, int width, int* data, int* display);
+void loadRow(int row, int width, unsigned char* data, unsigned char* display);
 
 int main (int argc, char *argv[])
 {
