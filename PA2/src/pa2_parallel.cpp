@@ -31,8 +31,8 @@ void loadRow(int row, int width, unsigned char* data, unsigned char* display);
 
 int main (int argc, char *argv[])
 {
-	int display_width = 500;
-	int display_height = 500;
+	int display_width = 5000;
+	int display_height = 5000;
 
 	int   numtasks, taskid, len;
 	char hostname[MPI_MAX_PROCESSOR_NAME];
@@ -309,7 +309,7 @@ void writeImage(unsigned char* img, int display_width, int display_height)
 {
 	int row, col;
 
-	FILE* fp = fopen("../../bin/imageP.ppm", "wb");
+	FILE* fp = fopen("../../bin/imageP5k.ppm", "wb");
 
 	fprintf(fp, "P5\n# \n%d %d\n255\n", display_width, display_height);
 
