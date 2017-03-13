@@ -6,7 +6,7 @@ LIBS=-lpmi
 FILE=../../src/pa2_parallel.cpp
 # uncomment below if/when you have a folder called include that holds potential header files
 #INCLUDES=-I../include
-OUTPUT=pa2
+OUTPUT=pa2p
 
 all: $(OUTPUT)
 
