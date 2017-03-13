@@ -159,7 +159,7 @@ int main (int argc, char *argv[])
 		//calculates each x value
 		for(int pxlCol = 0; pxlCol < display_width; pxlCol++){
 			c.real = real_min + pxlCol * scale_real;
-			pxlBuff[pxlCol] = cal_Pixel(c);
+			pxlBuff[pxlCol] = cal_pixel(c);
 		}
 		
 		//send off row
