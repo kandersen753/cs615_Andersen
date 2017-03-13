@@ -25,7 +25,7 @@ struct Complex
 
 int cal_pixel(struct Complex c);
 
-void writeImage(int* img, int display_width, int display_height);
+void writeImage(unsigned char* img, int display_width, int display_height);
 
 void loadRow(int row, int width, int* data, int* display);
 
@@ -177,6 +177,7 @@ int main (int argc, char *argv[])
 
 		if(taskid == MASTER){
 				//local vars
+				float delta, start, end;
 				int row = 0;
 				int count = 0;
 				int rowTracker[numtasks]; /*Tracks what row a process is processing */
@@ -231,7 +232,7 @@ int main (int argc, char *argv[])
 		  
 				std::cout <<  display_height << ',' << display_width << ',' << delta << ',' << numtasks << std::endl;
 		  
-				pim_write_black_and_white(argv[3], display_width, display_height, disp);
+				writeImage(disp, display_width, display_height);
 			
 			  	delete [] rowBuffer;
 			  	delete [] disp;
@@ -262,7 +263,7 @@ int main (int argc, char *argv[])
 				for(int pxlCol = 0; pxlCol < display_width; pxlCol++){
 					c.real = real_min + pxlCol * (real_max - real_min)/display_width;
 		  
-					pxlBuff[pxlCol] = (unsigned char)calcPixel(c);
+					pxlBuff[pxlCol] = (unsigned char)cal_pixel(c);
 				}
 				
 				//send off row
@@ -303,7 +304,7 @@ int cal_pixel(struct Complex c)
 	return count;
 }
 
-void writeImage(int* img, int display_width, int display_height)
+void writeImage(unsigned char* img, int display_width, int display_height)
 {
 	int row, col;
 
