@@ -24,7 +24,7 @@ int cal_pixel(struct Complex c);
 
 void writeImage(int* img, int display_width, int display_height);
 
-void loadRow(int row, int width,  unsigned int* data, unsigned int* display);
+void loadRow(int row, int width, int* data, int* display);
 
 int main (int argc, char *argv[])
 {
@@ -91,7 +91,7 @@ int main (int argc, char *argv[])
 		
 		//send rows to each process initially
 		for (int currentProccess = 1; currentProccess < numcurrentProccesss; currentProccess++){
-				MPI_Send(&row, 1, MPI_INT, currentProccess, DATA_TAG, MPI_COMM_WORLD);
+				MPI_Send(&row, 1, MPI_INT, currentProccess, 0, MPI_COMM_WORLD);
 				tracker[currentProccess] = row;
 				row++;
 				count++;
@@ -101,7 +101,7 @@ int main (int argc, char *argv[])
 		//handle the returned rows and reassign tasks from the pool
 		do{
 				//I need data about recieved data
-				MPI_Recv(rowBuffer, display_width, MPI_UNSIGNED_CHAR, MPI_ANY_SOURCE, REQ_TAG, MPI_COMM_WORLD,
+				MPI_Recv(rowBuffer, display_width, MPI_UNSIGNED_CHAR, MPI_ANY_SOURCE, 2, MPI_COMM_WORLD,
 				&status);
 				count --;
 				
@@ -112,13 +112,13 @@ int main (int argc, char *argv[])
 				//while we still have unprocessed rows
 				//send work to various processes
 				if(row < display_height){
-					MPI_Send(&row, 1, MPI_INT, status.MPI_SOURCE, DATA_TAG, MPI_COMM_WORLD);
+					MPI_Send(&row, 1, MPI_INT, status.MPI_SOURCE, 0, MPI_COMM_WORLD);
 					tracker[status.MPI_SOURCE] = row;
 					row++;
 					count++;
 				} 
 				else {
-					MPI_Send(&row, 1, MPI_INT, status.MPI_SOURCE, TERMINATE_TAG, MPI_COMM_WORLD);
+					MPI_Send(&row, 1, MPI_INT, status.MPI_SOURCE, 1, MPI_COMM_WORLD);
 				}
   
 		}while(count > 0);
@@ -149,7 +149,7 @@ int main (int argc, char *argv[])
 		
 		MPI_Recv(&row, 1, MPI_INT, MASTER, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 		
-		while(status.MPI_TAG == DATA_TAG){
+		while(status.MPI_TAG == 0){
   
 		
 		//process a row of pixels
@@ -158,12 +158,12 @@ int main (int argc, char *argv[])
 
 		//calculates each x value
 		for(int pxlCol = 0; pxlCol < display_width; pxlCol++){
-			c.real = real_min + pxlCol * scale_real
+			c.real = real_min + pxlCol * scale_real;
 			pxlBuff[pxlCol] = calcPixel(c);
 		}
 		
 		//send off row
-		MPI_Send(pxlBuff, display_width, MPI_UNSIGNED_CHAR, MASTER, REQ_TAG, MPI_COMM_WORLD);
+		MPI_Send(pxlBuff, display_width, MPI_UNSIGNED_CHAR, MASTER, 2, MPI_COMM_WORLD);
 	
 		
 		MPI_Recv(&row, 1, MPI_INT, MASTER, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
@@ -217,7 +217,7 @@ void writeImage(int* img, int display_width, int display_height)
 	fclose(fp);
 }
 
-void loadRow(int row, int width,  unsigned int* data, unsigned int* display){
+void loadRow(int row, int width, int* data, int* display){
     //calc row offset for 1d array
     int rowoffset = row * width;
 
