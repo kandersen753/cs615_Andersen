@@ -100,12 +100,12 @@ int main (int argc, char *argv[])
   
 		//handle the returned rows and reassign tasks from the pool
 		do{
-				//I need data about recieved data
+				//receives data from a slave node
 				MPI_Recv(rowBuffer, display_width, MPI_UNSIGNED_CHAR, MPI_ANY_SOURCE, 2, MPI_COMM_WORLD,
 				&status);
 				count --;
 				
-				//transfer data recieved into our display array
+				//moves data from the array received into the overall image array
 				loadRow(tracker[status.MPI_SOURCE], display_width, rowBuffer, oneDcolors);
 
 		
@@ -127,7 +127,7 @@ int main (int argc, char *argv[])
   
 		endTime = endTime - startTime;
   
-		cout <<  display_height << ',' << display_width << ',' << endTime << ',' << numtasks << endl;
+		cout <<  display_height << ', ' << display_width << ', ' << endTime << ', ' << numtasks << endl;
   
 		writeImage(oneDcolors, display_width, display_height);
 	
@@ -135,7 +135,7 @@ int main (int argc, char *argv[])
 	  	delete [] oneDcolors;
 	}
 
-	else if (taskid > MASTER)
+	else if (taskid != MASTER)
 	{
 		//variables for computing rows and 
 		int row;
@@ -147,26 +147,26 @@ int main (int argc, char *argv[])
 		//allocate space for the buffer we are sending out
 		pxlBuff = new int [display_width];
 		
+		//receive which row we need to calculate from the master node
 		MPI_Recv(&row, 1, MPI_INT, MASTER, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 		
-		while(status.MPI_TAG == 0){
-  
-		
-		//process a row of pixels
-		//calculates y value
-		c.imag = imag_min + row * scale_imag;
+		while(status.MPI_TAG == 0)
+		{
+			//process a row of pixels
+			//calculates y value
+			c.imag = imag_min + row * scale_imag;
 
-		//calculates each x value
-		for(int pxlCol = 0; pxlCol < display_width; pxlCol++){
-			c.real = real_min + pxlCol * scale_real;
-			pxlBuff[pxlCol] = cal_pixel(c);
-		}
+			//calculates each x value
+			for(int x = 0; x < display_width; x++){
+				c.real = real_min + x * scale_real;
+				pxlBuff[x] = cal_pixel(c);
+			}
+			
+			//send off row that has finished calculating
+			MPI_Send(pxlBuff, display_width, MPI_UNSIGNED_CHAR, MASTER, 2, MPI_COMM_WORLD);
 		
-		//send off row
-		MPI_Send(pxlBuff, display_width, MPI_UNSIGNED_CHAR, MASTER, 2, MPI_COMM_WORLD);
-	
-		
-		MPI_Recv(&row, 1, MPI_INT, MASTER, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+			//receive a new row to calculate
+			MPI_Recv(&row, 1, MPI_INT, MASTER, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 		}
 
 		delete [] pxlBuff;;
