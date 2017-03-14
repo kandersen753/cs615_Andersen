@@ -1,4 +1,4 @@
-# PA1: "Ping Pong"
+# PA2: "Mandelbrot Set"
 
 # Dependencies, Building, and Running
 
@@ -16,32 +16,46 @@ ssh username@h1.cse.unr.edu
 There is one option to build this project and that is by a Makefile.  
 This option is to use the provided Makefile, which is easier to look at and compile from.
 
-Running the make in a separate directory will allow easy cleanup of the build data, and an easy way to prevent unnecessary data to be added to the git repository.  
+Running the make in a separate directory will allow easy cleanup of the build data, and an easy way to prevent unnecessary data to be added to the git repository.
+
+With this project I have 2 seperate makefiles for each Sequential and Parallel programs 
 
 \
 ### Makefile Instructions
 The makefile works as expected and must be updated with new files added in.
 
+
+From the main directory of PA2 to compile Parallel
 ```bash
-cd build
+cd build/parallel
 make
+```
+
+From the main directory of PA2 to compile Sequential
+```bash
+cd build/sequential
+make
+```
+
+Now you can run one of two bash scripts.  Each bash script is located with the appropriate compiled file. In order to run the parallel program from the PA2 main directiory input the following...
+```bash
+cd build/parallel
+sbatch dynamic.sh
+```
+
+In order to run the sequential version of the code, input the following commands from the PA2 main directory.
+```bash
+cd build/sequentail
+sbatch sequential.sh
+```
+
+These two scripts will output a file of 5000x5000 pixels to an image in the bin folder.  They will be named appropriately to the program that executed it. i.e. "sequentailmandelbrot.ppm"
+
+To clean the files you've created, there is an extra target, `clean`. From the PA2 main directory input the following commands to clean all of the executable files
+```bash
+cd build/parallel
+make clean
 cd ..
-```
-
-Now you can run one of 3 bash scripts, enter each as following in order to run it
-Each bash script is limited to a 5 minute time limit, so if for whatever reason the program continues to execute, it will automatically be cut off at 5 minutes.  Each script will also run through sending 1-3000 integers to the other processor 100 times for each number of ints.  The program then takes the average to get a resonable number.  Before running an sbatch file, ensure the you are in the main directory of PA1.
-
-```bash
-sbatch One_box.sh
-sbatch Two_box.sh
-sbatch Timing.sh
-```
-
-Each of these will output data to a file followed by the job number it was assigned by the cluster.
-These output files can be found within the output folder.
-
-To clean the files you've created, there is an extra target, `clean`.
-```bash
-cd build
+cd sequentail
 make clean
 ```
