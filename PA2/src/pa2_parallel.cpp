@@ -56,11 +56,6 @@ int main (int argc, char *argv[])
 	float imag_min = -1.2;
 	float imag_max = imag_min+(real_max-real_min)*display_height/display_width;
 
-	//sets the scale values for the image
-	float scale_real = (real_max-real_min) / display_width;
-	float scale_imag = (imag_max-imag_min) / display_height;
-
-
 		//master task
 		if(taskid == MASTER)
 		{
