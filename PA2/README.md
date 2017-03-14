@@ -20,7 +20,6 @@ Running the make in a separate directory will allow easy cleanup of the build da
 
 With this project I have 2 seperate makefiles for each Sequential and Parallel programs 
 
-\
 ### Makefile Instructions
 The makefile works as expected and must be updated with new files added in.
 
@@ -45,7 +44,7 @@ sbatch dynamic.sh
 
 In order to run the sequential version of the code, input the following commands from the PA2 main directory.
 ```bash
-cd build/sequentail
+cd build/sequential
 sbatch sequential.sh
 ```
 
