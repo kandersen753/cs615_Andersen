@@ -11,8 +11,8 @@
 #include <iostream>
 #define  MASTER		0
 #define DATA_TAG 0
-#define TERMINATE_TAG 1
-#define REQ_TAG 2
+#define TERMINATOR 1
+#define REQUEST_TAG 2
 using namespace std;
 
 struct Complex
@@ -27,7 +27,8 @@ int cal_pixel(struct Complex c);
 
 void writeImage(unsigned char* img, int display_width, int display_height);
 
-void loadRow(int row, int width, unsigned char* data, unsigned char* display);
+void addData(int row, int width, unsigned char* data, unsigned char* display);
+
 
 int main (int argc, char *argv[])
 {
@@ -46,237 +47,135 @@ int main (int argc, char *argv[])
 
 	//gets the hostname
 	MPI_Get_processor_name(hostname, &len);
-	
-	//variables for timing
-	double startTime = 0.0;
-	double endTime = 0.0;
-
-
-	int** colors= new int* [(int)display_width];
-	for (int i=0; i<display_width; i++)
-	{
-		colors[i] = new int [(int)display_height];
-	}
-
-	int* oneDcolors;
 
 	struct Complex c;
 
-
+	//sets values for the image orientation
 	float real_min = -2.0;
 	float real_max = 1.0;
 	float imag_min = -1.2;
 	float imag_max = imag_min+(real_max-real_min)*display_height/display_width;
 
-
+	//sets the scale values for the image
 	float scale_real = (real_max-real_min) / display_width;
 	float scale_imag = (imag_max-imag_min) / display_height;
 
 
-	//master tasks
-	/*if (taskid == MASTER)
-	{
-		//local vars
-		int row = 0;
-		int count = 0;
-		int tracker[numtasks]; //Tracks what row a process is processing *
-		MPI_Status status;
-		int* rowBuffer;
-		
-		
-  
-  
-		//allocate space for arrays
-		rowBuffer = new int [display_width];
-		oneDcolors = new int [display_width*display_height];
-  
-		startTime = MPI_Wtime();
-		
-		//send rows to each process initially
-		for (int currentProccess = 1; currentProccess < numtasks; currentProccess++){
-				MPI_Send(&row, 1, MPI_INT, currentProccess, 0, MPI_COMM_WORLD);
-				tracker[currentProccess] = row;
-				row++;
-				count++;
-  
-		}
-  
-		//handle the returned rows and reassign tasks from the pool
-		do{
-				//receives data from a slave node
-				MPI_Recv(rowBuffer, display_width, MPI_UNSIGNED_CHAR, MPI_ANY_SOURCE, 2, MPI_COMM_WORLD,
-				&status);
-				count --;
-				
-				//moves data from the array received into the overall image array
-				loadRow(tracker[status.MPI_SOURCE], display_width, rowBuffer, oneDcolors);
+		//master task
+		if(taskid == MASTER)
+		{
+			//variables for calculations
+			unsigned char* disp = new unsigned char [display_height*display_width];
+			float delta, start, end;
+			int row = 0;
+			int count = 0;
 
-		
-				//while we still have unprocessed rows
-				//send work to various processes
-				if(row < display_height){
-					MPI_Send(&row, 1, MPI_INT, status.MPI_SOURCE, 0, MPI_COMM_WORLD);
-					tracker[status.MPI_SOURCE] = row;
+			//has total number of tasks, and each offset represents another
+			//slave node, and the value stored is the row being calculated
+			int rowTracker[numtasks]; 
+			MPI_Status status;
+			unsigned char* rowBuffer;
+			
+			
+	  
+	  
+			//allocate space for arrays
+			rowBuffer = new unsigned char [display_width];
+			disp = new unsigned char [display_height * display_width];
+	  
+	  		//starts timer
+			start = MPI_Wtime();
+			
+			//initial task assignment
+			for (int proc = 1; proc < numtasks; proc++)
+			{
+					MPI_Send(&row, 1, MPI_INT, proc, DATA_TAG, MPI_COMM_WORLD);
+					rowTracker[proc] = row;
 					row++;
 					count++;
-				} 
-				else {
-					MPI_Send(&row, 1, MPI_INT, status.MPI_SOURCE, 1, MPI_COMM_WORLD);
-				}
-  
-		}while(count > 0);
-  
-		endTime = MPI_Wtime();
-  
-		endTime = endTime - startTime;
-  
-		cout <<  display_height << ', ' << display_width << ', ' << endTime << ', ' << numtasks << endl;
-  
-		writeImage(oneDcolors, display_width, display_height);
-	
-	  	delete [] rowBuffer;
-	  	delete [] oneDcolors;
-	}
-
-	else if (taskid != MASTER)
-	{
-		//variables for computing rows and 
-		int row;
-		MPI_Status status;
-		int *pxlBuff;
-		
-		
-  
-		//allocate space for the buffer we are sending out
-		pxlBuff = new int [display_width];
-		
-		//receive which row we need to calculate from the master node
-		MPI_Recv(&row, 1, MPI_INT, MASTER, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-		
-		while(status.MPI_TAG == 0)
-		{
-			//process a row of pixels
-			//calculates y value
-			c.imag = imag_min + row * scale_imag;
-
-			//calculates each x value
-			for(int x = 0; x < display_width; x++){
-				c.real = real_min + x * scale_real;
-				pxlBuff[x] = cal_pixel(c);
+	  
 			}
+	  
+			//as tasks come back, reassign a task to the current slave
+			do
+			{
+					//receive data from slave X
+					MPI_Recv(rowBuffer, display_width, MPI_UNSIGNED_CHAR, MPI_ANY_SOURCE, 
+								REQUEST_TAG, MPI_COMM_WORLD,&status);
+					//decrement number of rows that are out
+					count --;
+					
+					//store slave X's data into the main array
+					addData(rowTracker[status.MPI_SOURCE], display_width, rowBuffer, disp);	    
 			
-			//send off row that has finished calculating
-			MPI_Send(pxlBuff, display_width, MPI_UNSIGNED_CHAR, MASTER, 2, MPI_COMM_WORLD);
-		
-			//receive a new row to calculate
-			MPI_Recv(&row, 1, MPI_INT, MASTER, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-		}
-
-		delete [] pxlBuff;;
-	}*/
-
-		if(taskid == MASTER){
-				//local vars
-				unsigned char* disp = new unsigned char [display_height*display_width];
-				float delta, start, end;
-				int row = 0;
-				int count = 0;
-				int rowTracker[numtasks]; /*Tracks what row a process is processing */
-				MPI_Status status;
-				unsigned char* rowBuffer;
-				
-				
-		  
-		  
-				//allocate space for arrays
-				rowBuffer = new unsigned char [display_width];
-				disp = new unsigned char [display_height * display_width];
-		  
-				start = MPI_Wtime();
-				
-				//send rows to each process initially
-				for (int proc = 1; proc < numtasks; proc++){
-						MPI_Send(&row, 1, MPI_INT, proc, DATA_TAG, MPI_COMM_WORLD);
-						rowTracker[proc] = row;
+					//while there is still unprocessed data, keep sending data out as needed
+					if(row < display_height)
+					{
+						MPI_Send(&row, 1, MPI_INT, status.MPI_SOURCE, DATA_TAG, MPI_COMM_WORLD);
+						rowTracker[status.MPI_SOURCE] = row;
 						row++;
 						count++;
-		  
-				}
-		  
-				//handle the returned rows and reassign tasks from the pool
-				do{
-						//I need data about recieved data
-						MPI_Recv(rowBuffer, display_width, MPI_UNSIGNED_CHAR, MPI_ANY_SOURCE, REQ_TAG, MPI_COMM_WORLD,
-						&status);
-						count --;
-						
-						//transfer data recieved into our display array
-						loadRow(rowTracker[status.MPI_SOURCE], display_width, rowBuffer, disp);	    
-				
-						//while we still have unprocessed rows
-						//send work to various processes
-						if(row < display_height){
-							MPI_Send(&row, 1, MPI_INT, status.MPI_SOURCE, DATA_TAG, MPI_COMM_WORLD);
-							rowTracker[status.MPI_SOURCE] = row;
-							row++;
-							count++;
-						} 
-						else {
-							MPI_Send(&row, 1, MPI_INT, status.MPI_SOURCE, TERMINATE_TAG, MPI_COMM_WORLD);
-						}
-		  
-				}while(count > 0);
-		  
-				end = MPI_Wtime();
-		  
-				delta = end - start;
-		  
-				std::cout <<  display_height << ',' << display_width << ',' << delta << ',' << numtasks << std::endl;
-		  
-				writeImage(disp, display_width, display_height);
+					} 
+					else 
+					{
+						MPI_Send(&row, 1, MPI_INT, status.MPI_SOURCE, TERMINATOR, MPI_COMM_WORLD);
+					}
+	  
+			}while(count > 0);
+	  
+	  		//all calculations completed
+			end = MPI_Wtime();
+	  		
+	  		//gives overall runtime
+			delta = end - start;
+	  		
+			std::cout <<  display_height << ',' << display_width << ',' << delta << ',' << numtasks << std::endl;
+	  
+	  		//prints data to image file
+			writeImage(disp, display_width, display_height);
+		
+		  	delete [] rowBuffer;
+		  	delete [] disp;
 			
-			  	delete [] rowBuffer;
-			  	delete [] disp;
-				
-			}
-		  
-			//
-			// SLAVES
-			//
+		}
 			
-			if(taskid > MASTER){
-				int row;
-				MPI_Status status;
-				unsigned char *pxlBuff;
-				
-				
-		  
-				//allocate space for the buffer we are sending out
-				pxlBuff = new unsigned char [display_width];
-				
-				MPI_Recv(&row, 1, MPI_INT, MASTER, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-				
-				while(status.MPI_TAG == DATA_TAG){
-		  
-				
+		//slave tasks
+		if(taskid > MASTER)
+		{	
+			//variables for calculations
+			int row;
+			MPI_Status status;
+			unsigned char *pxlBuff;
+			
+			
+	  
+			//allocate space for the buffer we are sending out
+			pxlBuff = new unsigned char [display_width];
+			
+			//receives which row to calculate from master
+			MPI_Recv(&row, 1, MPI_INT, MASTER, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+			
+			while(status.MPI_TAG == DATA_TAG)
+			{
 				//process a row of pixels
 				c.imag = imag_min + row * (imag_max - imag_min)/display_height;
-				for(int pxlCol = 0; pxlCol < display_width; pxlCol++){
+
+				//process the column values
+				for(int pxlCol = 0; pxlCol < display_width; pxlCol++)
+				{
 					c.real = real_min + pxlCol * (real_max - real_min)/display_width;
-		  
+		  			
+		  			//cast the int being returned as an unsigned char
 					pxlBuff[pxlCol] = (unsigned char)cal_pixel(c);
 				}
 				
-				//send off row
-				MPI_Send(pxlBuff, display_width, MPI_UNSIGNED_CHAR, MASTER, REQ_TAG, MPI_COMM_WORLD);
+				//sends calculated row back to the master node
+				MPI_Send(pxlBuff, display_width, MPI_UNSIGNED_CHAR, MASTER, REQUEST_TAG, MPI_COMM_WORLD);
 			
-				
 				MPI_Recv(&row, 1, MPI_INT, MASTER, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-				}
-
-				delete [] pxlBuff;
-			
-		
+			}
+			//deallocates array
+			delete [] pxlBuff;
 	    }
 	
 	MPI_Finalize();
@@ -285,6 +184,7 @@ int main (int argc, char *argv[])
 
 int cal_pixel(struct Complex c)
 {
+	//vatialbe declaration for calculations
 	int count;
 	int max_iter;
 	struct Complex z;
@@ -295,24 +195,31 @@ int cal_pixel(struct Complex c)
 	z.imag = 0;
 	count = 0;
 
+	//loops to find the proper value for the current pixel
 	do{
 		temp =z.real*z.real - z.imag*z.imag + c.real;
 		z.imag = 2*z.real*z.imag + c.imag;
 		z.real = temp;
 		lengthsq = z.real*z.real + z.imag*z.imag;
 		count++;
-	} while ((lengthsq < 4.0) && (count < max_iter));
+	} while ((lengthsq < 4.0) && (count < max_iter));//loops until the appropriate value is achieved
+
+	//returns the value for the data pixel
 	return count;
 }
 
 void writeImage(unsigned char* img, int display_width, int display_height)
 {
+	//varialbles for loops
 	int row, col;
 
-	FILE* fp = fopen("../../bin/imageP5k.ppm", "wb");
+	//static printing path
+	FILE* fp = fopen("../../bin/PARALLELMANDELBROT.ppm", "wb");
 
+	//adds header data for the image file
 	fprintf(fp, "P5\n# \n%d %d\n255\n", display_width, display_height);
 
+	//double nested loop to apply one dimensional while its treated as a 2d array
 	for (row =0; row < display_height; row++)
 	{
 		for (col=0; col < display_width; col++)
@@ -321,15 +228,19 @@ void writeImage(unsigned char* img, int display_width, int display_height)
 		}
 	}
 
+	//closes file stream
 	fclose(fp);
 }
 
-void loadRow(int row, int width, unsigned char* data, unsigned char* display){
-    //calc row offset for 1d array
-    int rowoffset = row * width;
+void addData(int row, int width, unsigned char* data, unsigned char* display)
+{
+    //gets the offset for the 1d to treat it as 2d
+    int nthRow = row * width;
 
-    for(int col = 0; col < width; col++){
-		display[rowoffset + col] = data[col];
+    //assigns data for the nth row
+    for(int col = 0; col < width; col++)
+    {
+		display[nthRow + col] = data[col];
     }
 
 }
