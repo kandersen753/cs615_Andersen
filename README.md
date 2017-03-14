@@ -8,4 +8,5 @@ Read through the Wiki on this repository to understand how each class works. Thi
 ```bash
 PA0: Hello World
 PA1: Ping Pong
+PA2: Mandelbrot Set / Job allocation
 ```
