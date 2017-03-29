@@ -32,6 +32,13 @@ int main(int argc, char* argv[])
 	int currentBucketSize;
 	int dataIndex = 0;
 
+	//timer variables
+	double startTime;
+	double checkPoint1;
+	double checkPoint2;
+	double endTime;
+	double overAllTime;
+
 	//gets filepath from command line
 	filePath = argv[1];
 
@@ -57,9 +64,10 @@ int main(int argc, char* argv[])
 	//closes file stream
 	fin.close();
 	
+	startTime = MPI_Wtime();
+
 	//gets the max value in the list
 	maxVal = findMax(values, numbersInFile);
-	std::cout << "MAX VALUE IS: " << maxVal << std::endl;
 
 	//split data into buckets
 	//iterates through each value
@@ -78,11 +86,17 @@ int main(int argc, char* argv[])
 		}
 	}
 
+	///gets time for distributing to buckets
+	checkPoint1 = MPI_Wtime() - startTime;
+
 	//sort each of the buckets
 	for (int i=0; i<numBuckets; i++)
 	{
 		buckets[i].sort();
 	}
+
+	//gets time to sort data in all buckets
+	checkPoint2 = MPI_Wtime() - checkPoint1;
 
 	//goes through each bucket and applies the numbers in order to the sorted array
 	for (int i=0; i<numBuckets; i++)
@@ -99,15 +113,18 @@ int main(int argc, char* argv[])
 			dataIndex++;
 		}
 	}
-	
-	//prints all the sorted values in order
-	for (int i=0; i<numbersInFile; i++)
-	{
-		std::cout << sortedValues[i] << std::endl;
-	}
-	
+
+	endTime = MPI_Wtime() - checkPoint2;
+	overAllTime = MPI_Wtime() - startTime;
+
+	std::cout << "Numbers is File:           " << numbersInFile << std::endl;
+	std::cout << "Time to distribute:        " << checkPoint1 << std::endl;
+	std::cout << "Time to only sort buckets: " << checkPoint2 << std::endl;
+	std::cout << "Time to reorganize list:   " << endTime << std::endl;
+	std::cout << "Overall time:              " << overAllTime << std::endl;
+
 	//ends program
-	mpi.finalize();
+	MPI_Finalize();
 }
 
 //finds the maximum value within an array
