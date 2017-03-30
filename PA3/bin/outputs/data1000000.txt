@@ -1,5 +1,2 @@
 Numbers is File:           1000000
-Time to distribute:        0.127593
-Time to only sort buckets: 1490833014.128958
-Time to reorganize list:   0.307515
-Overall time:              0.635712
+Time taken to sort:   0.633990
