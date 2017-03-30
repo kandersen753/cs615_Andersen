@@ -9,4 +9,5 @@ Read through the Wiki on this repository to understand how each class works. Thi
 PA0: Hello World
 PA1: Ping Pong
 PA2: Mandelbrot Set / Job allocation
+PA3: Bucket Sort
 ```
