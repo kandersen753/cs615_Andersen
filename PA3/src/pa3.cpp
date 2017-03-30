@@ -2,6 +2,8 @@
 #include <fstream>
 #include <list>
 #include <string>
+#include <stdio.h>
+#include <stdlib.h>
 #include "mpi.h"
 
 int findMax (int* data, int size);
@@ -117,11 +119,11 @@ int main(int argc, char* argv[])
 	endTime = MPI_Wtime() - checkPoint2;
 	overAllTime = MPI_Wtime() - startTime;
 
-	std::cout << "Numbers is File:           " << numbersInFile << std::endl;
-	std::cout << "Time to distribute:        " << checkPoint1 << std::endl;
-	std::cout << "Time to only sort buckets: " << checkPoint2 << std::endl;
-	std::cout << "Time to reorganize list:   " << endTime << std::endl;
-	std::cout << "Overall time:              " << overAllTime << std::endl;
+	printf("Numbers is File:           %f\n", numbersInFile);
+	printf("Time to distribute:        %f\n" , checkPoint1);
+	printf("Time to only sort buckets: %f\n", checkPoint2);
+	printf("Time to reorganize list:   %f\n", endTime);
+	printf("Overall time:              %f\n", overAllTime);
 
 	//ends program
 	MPI_Finalize();
