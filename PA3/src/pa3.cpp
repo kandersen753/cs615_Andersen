@@ -36,10 +36,7 @@ int main(int argc, char* argv[])
 
 	//timer variables
 	double startTime;
-	double checkPoint1;
-	double checkPoint2;
 	double endTime;
-	double overAllTime;
 
 	//gets filepath from command line
 	filePath = argv[1];
@@ -88,17 +85,11 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	///gets time for distributing to buckets
-	checkPoint1 = MPI_Wtime() - startTime;
-
 	//sort each of the buckets
 	for (int i=0; i<numBuckets; i++)
 	{
 		buckets[i].sort();
 	}
-
-	//gets time to sort data in all buckets
-	checkPoint2 = MPI_Wtime() - checkPoint1;
 
 	//goes through each bucket and applies the numbers in order to the sorted array
 	for (int i=0; i<numBuckets; i++)
@@ -116,14 +107,10 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	endTime = MPI_Wtime() - checkPoint2;
-	overAllTime = MPI_Wtime() - startTime;
+	endTime = MPI_Wtime() - startTime;
 
 	printf("Numbers is File:           %d\n", numbersInFile);
-	printf("Time to distribute:        %f\n" , checkPoint1);
-	printf("Time to only sort buckets: %f\n", checkPoint2);
-	printf("Time to reorganize list:   %f\n", endTime);
-	printf("Overall time:              %f\n", overAllTime);
+	printf("Time taken to sort:   %f\n", endTime);
 
 	//ends program
 	MPI_Finalize();
