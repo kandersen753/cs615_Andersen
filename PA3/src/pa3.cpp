@@ -119,7 +119,7 @@ int main(int argc, char* argv[])
 	endTime = MPI_Wtime() - checkPoint2;
 	overAllTime = MPI_Wtime() - startTime;
 
-	printf("Numbers is File:           %f\n", numbersInFile);
+	printf("Numbers is File:           %d\n", numbersInFile);
 	printf("Time to distribute:        %f\n" , checkPoint1);
 	printf("Time to only sort buckets: %f\n", checkPoint2);
 	printf("Time to reorganize list:   %f\n", endTime);
