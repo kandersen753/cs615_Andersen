@@ -6,7 +6,6 @@
 #include <stdlib.h>
 #include "mpi.h"
 
-int findMax (int* data, int size);
 
 int main(int argc, char* argv[])
 {
@@ -30,7 +29,7 @@ int main(int argc, char* argv[])
 	int* sortedValues;
 	int numbersInFile = 0;
 	std::string filePath;
-	int maxVal;
+	int maxVal = 0;
 	int currentBucketSize;
 	int dataIndex = 0;
 
@@ -58,15 +57,18 @@ int main(int argc, char* argv[])
 	for (int i=0; i<numbersInFile; i++)
 	{
 		fin >> values[i];
+
+		//check for max value in data set
+		if (maxVal < values[i])
+			{
+				maxVal = values[i];
+			}
 	}
 
 	//closes file stream
 	fin.close();
 	
 	startTime = MPI_Wtime();
-
-	//gets the max value in the list
-	maxVal = findMax(values, numbersInFile);
 
 	//split data into buckets
 	//iterates through each value
@@ -114,24 +116,4 @@ int main(int argc, char* argv[])
 
 	//ends program
 	MPI_Finalize();
-}
-
-//finds the maximum value within an array
-int findMax (int* data, int size)
-{
-	//assigns first data value as the mx
-	int max = data[0];
-
-	//loops to see what data is the largest, constantly replacing as a larger number comes by
-	for (int i=1; i<size; i++)
-	{
-		//checks if current data is larger than current max
-		if (data[i] > max)
-		{
-			max = data[i];
-		}
-	}
-
-	//returns maximum value in array
-	return max;
 }
