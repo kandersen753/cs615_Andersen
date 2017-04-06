@@ -1,0 +1,2 @@
+Numbers is File:           10000000
+Time taken to sort:   1.255568

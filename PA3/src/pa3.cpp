@@ -41,7 +41,7 @@ int main(int argc, char* argv[])
 	double startTime = 0;
 	double endTime = 0;
 
-	if (numtasks ==1)
+	if (numtasks == 1)
 	{
 		//variables used throughout program
 		int numBuckets=10;
@@ -122,7 +122,6 @@ int main(int argc, char* argv[])
 			int arraySizeToReceive;
 			int* dataToReceive[numBuckets];
 			std::vector<int> finalBucket;
-			MPI_Request request;
 
 			//allocate memory for main array
 			values = new int [numValues/numtasks+(numValues%numtasks)];
@@ -193,45 +192,50 @@ int main(int argc, char* argv[])
 					//first send size of array that will be coming
 					arraySizeToSend = buckets[i].size();
 
-					MPI_Isend(&arraySizeToSend, 1, MPI_INT, i, taskid*10+1, MPI_COMM_WORLD, &request);
+					MPI_Send(&arraySizeToSend, 1, MPI_INT, i, taskid*10+1, MPI_COMM_WORLD);
 
 					//send array
-					MPI_Isend(&dataToSend[i][0], buckets[i].size(), MPI_INT, i, taskid, MPI_COMM_WORLD, &request);
+					MPI_Send(&dataToSend[i][0], buckets[i].size(), MPI_INT, i, taskid, MPI_COMM_WORLD);
 
 				}
-			}
 
-			//copy data from bucket to final sorting array
-			for (unsigned int i=0; i<buckets[taskid].size(); i++)
-			{
-				finalBucket.push_back(buckets[taskid][i]); 
-			}
-
-			//receive data from all sources and move to main vector for sorting
-			for (int i=0; i<numtasks; i++)
-			{
-				//ensure not this task
-				if (taskid != i)
+				if (i == taskid)
 				{
-
-					//receive array size
-					MPI_Recv(&arraySizeToReceive, 1, MPI_INT, i, i*10+1, MPI_COMM_WORLD, &status);
-
-					//allocate for incoming array
-					dataToReceive[i] = new int [arraySizeToReceive];
-
-					//store data for incoming array
-
-					MPI_Recv(&dataToReceive[i][0], arraySizeToReceive, MPI_INT, i, i, MPI_COMM_WORLD, &status);
-
-
-					//push data from received array to sortable bucket
-					for (int j=0; j<arraySizeToReceive; j++)
+					//copy data from bucket to final sorting array
+					for (unsigned int j=0; j<buckets[taskid].size(); j++)
 					{
-						finalBucket.push_back(dataToReceive[i][j]);
+						finalBucket.push_back(buckets[taskid][j]); 
+					}
+
+					//receive data from all sources and move to main vector for sorting
+					for (int j=0; j<numtasks; j++)
+					{
+						//ensure not this task
+						if (taskid != j)
+						{
+
+							//receive array size
+							MPI_Recv(&arraySizeToReceive, 1, MPI_INT, j, j*10+1, MPI_COMM_WORLD, &status);
+
+							//allocate for incoming array
+							dataToReceive[j] = new int [arraySizeToReceive];
+
+							//store data for incoming array
+
+							MPI_Recv(&dataToReceive[j][0], arraySizeToReceive, MPI_INT, j, j, MPI_COMM_WORLD, &status);
+
+
+							//push data from received array to sortable bucket
+							for (int k=0; k<arraySizeToReceive; k++)
+							{
+								finalBucket.push_back(dataToReceive[j][k]);
+							}
+						}
 					}
 				}
 			}
+
+
 
 			//sort final vector
 			std::sort(finalBucket.begin(), finalBucket.end());
@@ -255,7 +259,6 @@ int main(int argc, char* argv[])
 			int arraySizeToReceive;
 			int* dataToReceive[numBuckets];
 			std::vector<int> finalBucket;
-			MPI_Request request;
 
 			//allocate memory for main array
 			values = new int [numValues/numtasks];
@@ -280,8 +283,66 @@ int main(int argc, char* argv[])
 					}
 				}
 			}
-
 			//loop to send bucket data to each other processor
+			for (int i=0; i<numtasks; i++)
+			{
+				//allocate memory to send arrays instead of vector
+				dataToSend[i] = new int [buckets[i].size()];
+
+				//if not current process send data
+				if (i != taskid)
+				{
+					//copy data from vector to array
+					for (int j=0; j<(int)buckets[i].size(); j++)
+					{
+						dataToSend[i][j] = buckets[i][j];
+					}					
+					//first send size of array that will be coming
+					arraySizeToSend = buckets[i].size();
+
+					MPI_Send(&arraySizeToSend, 1, MPI_INT, i, taskid*10+1, MPI_COMM_WORLD);
+
+					//send array
+					MPI_Send(&dataToSend[i][0], buckets[i].size(), MPI_INT, i, taskid, MPI_COMM_WORLD);
+
+				}
+
+				if (i == taskid)
+				{
+					//copy data from bucket to final sorting array
+					for (unsigned int j=0; j<buckets[taskid].size(); j++)
+					{
+						finalBucket.push_back(buckets[taskid][j]); 
+					}
+
+					//receive data from all sources and move to main vector for sorting
+					for (int j=0; j<numtasks; j++)
+					{
+						//ensure not this task
+						if (taskid != j)
+						{
+
+							//receive array size
+							MPI_Recv(&arraySizeToReceive, 1, MPI_INT, j, j*10+1, MPI_COMM_WORLD, &status);
+
+							//allocate for incoming array
+							dataToReceive[j] = new int [arraySizeToReceive];
+
+							//store data for incoming array
+
+							MPI_Recv(&dataToReceive[j][0], arraySizeToReceive, MPI_INT, j, j, MPI_COMM_WORLD, &status);
+
+
+							//push data from received array to sortable bucket
+							for (int k=0; k<arraySizeToReceive; k++)
+							{
+								finalBucket.push_back(dataToReceive[j][k]);
+							}
+						}
+					}
+				}
+			}
+			/*//loop to send bucket data to each other processor
 			for (int i=0; i<numtasks; i++)
 			{
 				//allocate memory to send arrays instead of vector
@@ -332,7 +393,7 @@ int main(int argc, char* argv[])
 						finalBucket.push_back(dataToReceive[i][j]);
 					}
 				}
-			}
+			}*/
 
 			//sort final vector
 			std::sort(finalBucket.begin(), finalBucket.end());
