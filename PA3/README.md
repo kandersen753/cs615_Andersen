@@ -25,21 +25,19 @@ make
 ```
 
 
-Now to run the program, while still in the build folder, enter the following commands:
+Now to run the program, while still in the build folder, enter the following commands to run the sequential version of the code:
 ```bash
-sbatch sequentialBucket.sh
-```
-The current setup of the script will run pa3 as a sequential program on 1 processor.  Right now it is limited to 100 data items to be sorted.  This is the smallest set of data I sort.  To change the file you want to run from, go into the script file, and add an extra 0 to the .txt files.  Doing the following instructions will make the code run 1000 data points instead of 100.
-
-```bash
-change from this:
-srun pa3 ../bin/inputs/100.txt  > ../bin/outputs/data100.txt
-to:
-srun pa3 ../bin/inputs/1000.txt  > ../bin/outputs/data1000.txt
+sbatch seqBucket.sh
 ```
 
+In order to run the parallelized code, enter this command:
+```bash
+sbatch parallelBucket.sh
+```
+If you would like to adjust the amount of data being processed on the sequential or parallel version, open the bash file and adjust the srun line.
 
-To clean the files you've created, there is an extra target, `clean`. From the PA2 main directory input the following commands to clean all of the executable files
+
+To clean the files you've created, there is an extra target, `clean`. From the PA3 main directory input the following commands to clean all of the executable files
 ```bash
 cd build
 make clean
