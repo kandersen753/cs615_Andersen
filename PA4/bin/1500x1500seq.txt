@@ -1,0 +1,2 @@
+Matrix Dimensions = 1500
+RunTime = 51.9196
