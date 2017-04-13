@@ -10,4 +10,5 @@ PA0: Hello World
 PA1: Ping Pong
 PA2: Mandelbrot Set / Job allocation
 PA3: Bucket Sort
+PA4: Matrix Multiplication
 ```
