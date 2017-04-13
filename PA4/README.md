@@ -18,7 +18,7 @@ This option is to use the provided Makefile, which is easier to look at and comp
 
 Running the make in a separate directory will allow easy cleanup of the build data, and an easy way to prevent unnecessary data to be added to the git repository.
 
-From the main directory of PA3 to compile
+From the main directory of PA4 to compile
 ```bash
 cd build
 make
@@ -34,7 +34,7 @@ sbatch seqMatrix.sh
 If you would like to adjust the amount of data being processed on the sequential, open the bash file and adjust the srun line.
 
 
-To clean the files you've created, there is an extra target, `clean`. From the PA3 main directory input the following commands to clean all of the executable files
+To clean the files you've created, there is an extra target, `clean`. From the PA4 main directory input the following commands to clean all of the executable files
 ```bash
 cd build
 make clean
