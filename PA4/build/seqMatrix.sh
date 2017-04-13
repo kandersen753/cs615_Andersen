@@ -4,4 +4,4 @@
 #SBATCH -N1
 #SBATCH --time=00:10:00
 
-srun pa4 1500 > ../bin/1500x1500seq.txt
+srun pa4 2700 >> ../bin/outputSequentialData.txt
