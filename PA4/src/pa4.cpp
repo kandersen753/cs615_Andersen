@@ -106,12 +106,17 @@ int main(int argc, char* argv[])
 			int numSubMatrixPerRow = sqrt(numtasks);
 			int* dataSenderA;
 			int* dataSenderB;
-			int* masterData;
+			int* subMatrixA;
+			int* subMatrixB;
+			int* subMatrixC;
 			int dataSenderOffset = 0;
 			int currentRowSection = 0;
 			int currentColSection = 0;
-
-			std::cout << "sub Dimension = " << subMatrixDimension << std::endl;
+			MPI_Status status;
+			int myColPosition = taskid%numSubMatrixPerRow;
+			int myRowPosition = taskid/numSubMatrixPerRow;
+			int matrixADestination;
+			int matrixBDestination;
 
 			//allocate memory for main arrays
 			matrixA = new int [matrixDimension*matrixDimension];
@@ -119,7 +124,9 @@ int main(int argc, char* argv[])
 			solutionMatrix = new int [matrixDimension*matrixDimension];
 			dataSenderA = new int [subMatrixDimension*subMatrixDimension];
 			dataSenderB = new int [subMatrixDimension*subMatrixDimension];
-			masterData = new int[subMatrixDimension*subMatrixDimension];
+			subMatrixA = new int[subMatrixDimension*subMatrixDimension];
+			subMatrixB = new int [subMatrixDimension*subMatrixDimension];
+			subMatrixC = new int [subMatrixDimension*subMatrixDimension];
 
 			//random numbers 0 to 100 for matrixA
 			for (int i=0; i<matrixDimension*matrixDimension; i++)
@@ -128,30 +135,12 @@ int main(int argc, char* argv[])
 				matrixB[i] = (random()%100) + 1;
 			}
 
-			 //reference to navigate array appropriately
-			std::cout << "Matrix A" << std::endl;
-			//test print A
-			for (int i=0; i<matrixDimension; i++)
+			//initialize all data in the solution sub matrix to 0
+			for (int i=0; i<subMatrixDimension*subMatrixDimension; i++)
 			{
-				for (int j=0; j<matrixDimension; j++)
-				{
-					std::cout << matrixA[j+i*matrixDimension] << " ";
-				}
-				std::cout << std::endl;
-			}
-
-			std::cout << std::endl << "Matrix B" << std::endl;
-			//test print B
-			for (int i=0; i<matrixDimension; i++)
-			{
-				for (int j=0; j<matrixDimension; j++)
-				{
-					std::cout << matrixB[j+i*matrixDimension] << " ";
-				}
-				std::cout << std::endl;
+				subMatrixC[i] = 0;
 			}
 			
-
 			//loops to distribute to each sub matrix
 			//current col section represents which column of sub matrices we are looking at, while current row section
 			//is the row of sub matrices we are looking at, so 1,1 would be one row down, and one column in
@@ -165,7 +154,8 @@ int main(int argc, char* argv[])
 					currentRowSection++;
 					currentColSection = 0;
 				}
-				std::cout << currentRowSection << "  " << currentColSection << std::endl;
+
+				//loops to move data for the current submatrix to a new 1D array to send off to sub processes
 				for (int currentRow=0; currentRow<subMatrixDimension; currentRow++)
 				{
 					for (int currentCol=0; currentCol<subMatrixDimension; currentCol++, dataSenderOffset++)
@@ -175,6 +165,281 @@ int main(int argc, char* argv[])
 					}
 				}
 
+				//send data to individual processes
+				//keep data for master process
+				if (currentDistribution == 0)
+				{
+					//copies data from stuff supposed to be sent to the masters data
+					for (int i=0; i<subMatrixDimension*subMatrixDimension; i++)
+					{
+						subMatrixA[i] = dataSenderA[i];
+						subMatrixB[i] = dataSenderB[i];
+					}
+				}
+				//send data to other processes
+				else
+				{
+					//sends sub matrix A values, then sends sub matrix B values to the specific 
+					MPI_Send(dataSenderA, subMatrixDimension*subMatrixDimension, MPI_INT, currentDistribution, 1, MPI_COMM_WORLD);
+					MPI_Send(dataSenderB, subMatrixDimension*subMatrixDimension, MPI_INT, currentDistribution, 2, MPI_COMM_WORLD);
+				}
+
+			}
+std::cout << "pre barrier 1" << std::endl;
+			//waits for all data to be sent to each process, and all processes have received their data
+			MPI_Barrier(MPI_COMM_WORLD);
+std::cout << "post barrier 1" << std::endl;
+
+			//pass data for initial setup for cannons algorithm
+			//send then receive A matrix first
+			if (taskid - (myRowPosition*numSubMatrixPerRow) - myRowPosition < 0)
+			{
+				//checks to see if piece of data needs to reset to the right side of matrix
+				matrixADestination = taskid - myRowPosition + numSubMatrixPerRow;
+			}
+			else
+			{
+				//no reset is needed, stays in same row
+				matrixADestination = taskid - myRowPosition;
+			}
+
+			//sends data for the A submatrix, then receives new data for the new submatrix
+			if (taskid != matrixADestination)
+			{			
+				MPI_Send(subMatrixA, subMatrixDimension*subMatrixDimension, MPI_INT, matrixADestination, 1, MPI_COMM_WORLD);
+				MPI_Recv(subMatrixA, subMatrixDimension*subMatrixDimension, MPI_INT, MPI_ANY_SOURCE, 1, MPI_COMM_WORLD, &status);
+			}			
+std::cout << "pre barrier 2" << std::endl;
+			//barrier is used here since anysource is used.  This restricts it so only 1 message is getting sent to this processor
+			MPI_Barrier(MPI_COMM_WORLD);
+std::cout << "post barrier 2" << std::endl;
+			//send and reverive B matrix
+			if (taskid - (myColPosition*numSubMatrixPerRow) < 0)
+			{
+				//if a wrap around is needed for the columns, resets it back up to the proper position
+				matrixBDestination = taskid - (myColPosition*numSubMatrixPerRow) + (numSubMatrixPerRow*numSubMatrixPerRow);
+				std::cout << matrixBDestination << std::endl;
+			}
+			else
+			{
+				//no reset is needed
+				matrixBDestination = taskid - (myColPosition*numSubMatrixPerRow);
+			}
+
+			//sends data for the B submatrix, then receives new data for the new submatrix
+			if (taskid != matrixBDestination)
+			{
+				MPI_Send(subMatrixB, subMatrixDimension*subMatrixDimension, MPI_INT, matrixBDestination, 2, MPI_COMM_WORLD);
+				MPI_Recv(subMatrixB, subMatrixDimension*subMatrixDimension, MPI_INT, MPI_ANY_SOURCE, 2, MPI_COMM_WORLD, &status);
+			}
+			//barrier is used here since anysource is used.  This restricts it so only 1 message is getting sent to this processor
+			MPI_Barrier(MPI_COMM_WORLD);
+
+			//loop to do all calculations and add current sub matrix solution to the solution sub matrix C
+			//loops enough for the amount of needed shifts
+			for (int i = 0; i<numSubMatrixPerRow; i++)
+			{
+				//triple nest to do matrix multiplication for the current sub matrix set of a and b
+				for (int j=0; j<subMatrixDimension; j++)
+				{
+					for (int k=0; k<subMatrixDimension; k++)
+					{
+						for (int l=0; l<subMatrixDimension; l++)
+						{
+							subMatrixC[k+l*subMatrixDimension] += subMatrixA[l+j*subMatrixDimension] * subMatrixB[k+l*subMatrixDimension];
+						}
+					}
+				}
+
+				//current sub matrix calculated now calculate where each submatrix will get sent next
+				//send then receive A matrix first
+				//1 is used because each row shift is only 1 displacement in the processor mesh
+				if (taskid - (myRowPosition*numSubMatrixPerRow) - 1 < 0)
+				{
+					//checks to see if piece of data needs to reset to the right side of matrix
+					matrixADestination = taskid - 1 + numSubMatrixPerRow;
+				}
+				else
+				{
+					//no reset is needed, stays in same row
+					matrixADestination = taskid - 1;
+				}
+
+				//sends data for the A submatrix, then receives new data for the new submatrix
+				MPI_Send(subMatrixA, subMatrixDimension*subMatrixDimension, MPI_INT, matrixADestination, 1, MPI_COMM_WORLD);
+				MPI_Recv(subMatrixA, subMatrixDimension*subMatrixDimension, MPI_INT, MPI_ANY_SOURCE, 1, MPI_COMM_WORLD, &status);
+				
+				//barrier is used here since anysource is used.  This restricts it so only 1 message is getting sent to this processor
+				MPI_Barrier(MPI_COMM_WORLD);
+
+				//send and reverive B matrix
+				if (taskid - numSubMatrixPerRow < 0)
+				{
+					//if a wrap around is needed for the columns, resets it back up to the proper position
+					matrixBDestination = taskid - numSubMatrixPerRow + (numSubMatrixPerRow*numSubMatrixPerRow);
+				}
+				else
+				{
+					//no reset is needed
+					matrixBDestination = taskid - numSubMatrixPerRow;
+				}
+
+				//sends data for the B submatrix, then receives new data for the new submatrix
+				MPI_Send(subMatrixB, subMatrixDimension*subMatrixDimension, MPI_INT, matrixBDestination, 2, MPI_COMM_WORLD);
+				MPI_Recv(subMatrixB, subMatrixDimension*subMatrixDimension, MPI_INT, MPI_ANY_SOURCE, 2, MPI_COMM_WORLD, &status);
+
+				//barrier is used here since anysource is used.  This restricts it so only 1 message is getting sent to this processor
+				MPI_Barrier(MPI_COMM_WORLD);
+
+			}
+		}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//subprocessors start here
+		else if (taskid > 0)
+		{
+			//variable declaration for all calculations
+			int* subMatrixA;
+			int* subMatrixB;
+			int* subMatrixC;
+			int subMatrixDimension = matrixDimension/(sqrt(numtasks));
+			int numSubMatrixPerRow = sqrt(numtasks);
+			MPI_Status status;
+			int myColPosition = taskid%numSubMatrixPerRow;
+			int myRowPosition = taskid/numSubMatrixPerRow;
+			int matrixADestination = 0;
+			int matrixBDestination = 0;
+
+			//allocate enough space in memory for each sub matrix
+			subMatrixA = new int [subMatrixDimension*subMatrixDimension];
+			subMatrixB = new int [subMatrixDimension*subMatrixDimension];
+			subMatrixC = new int [subMatrixDimension*subMatrixDimension];
+
+			//initializes solution sub matrix data to all 0;
+			for (int i=0; i<subMatrixDimension*subMatrixDimension; i++)
+			{
+				subMatrixC[i] = 0;
+			}
+
+			//receives data from the master for the initial sub matrix data
+			MPI_Recv(subMatrixA, subMatrixDimension*subMatrixDimension, MPI_INT, 0, 1, MPI_COMM_WORLD, &status);
+			MPI_Recv(subMatrixB, subMatrixDimension*subMatrixDimension, MPI_INT, 0, 2, MPI_COMM_WORLD, &status);
+std::cout << "processor # " << taskid << " received original data" << std::endl;
+			//waits until all subprocesses have received their data
+			MPI_Barrier(MPI_COMM_WORLD);
+
+			//pass data for initial setup for cannons algorithm
+			//send then receive A matrix first
+			if (taskid - (myRowPosition*numSubMatrixPerRow) - myRowPosition < 0)
+			{
+				//checks to see if piece of data needs to reset to the right side of matrix
+				matrixADestination = taskid - myRowPosition + numSubMatrixPerRow;
+			}
+			else
+			{
+				//no reset is needed, stays in same row
+				matrixADestination = taskid - myRowPosition;
+			}
+
+			//sends data for the A submatrix, then receives new data for the new submatrix
+			if (taskid != matrixADestination)
+			{
+				MPI_Send(subMatrixA, subMatrixDimension*subMatrixDimension, MPI_INT, matrixADestination, 1, MPI_COMM_WORLD);
+				MPI_Recv(subMatrixA, subMatrixDimension*subMatrixDimension, MPI_INT, MPI_ANY_SOURCE, 1, MPI_COMM_WORLD, &status);
+			}
+
+			//barrier is used here since anysource is used.  This restricts it so only 1 message is getting sent to this processor
+			MPI_Barrier(MPI_COMM_WORLD);
+
+			//send and reverive B matrix
+			if (taskid - (myColPosition*numSubMatrixPerRow) < 0)
+			{
+				//if a wrap around is needed for the columns, resets it back up to the proper position
+				matrixBDestination = taskid - (myColPosition*numSubMatrixPerRow) + (numSubMatrixPerRow*numSubMatrixPerRow);
+			}
+			else
+			{
+				//no reset is needed
+				matrixBDestination = taskid - (myColPosition*numSubMatrixPerRow);
+			}
+
+			//sends data for the B submatrix, then receives new data for the new submatrix
+			if (taskid != matrixBDestination)
+			{
+				MPI_Send(subMatrixB, subMatrixDimension*subMatrixDimension, MPI_INT, matrixBDestination, 2, MPI_COMM_WORLD);
+				MPI_Recv(subMatrixB, subMatrixDimension*subMatrixDimension, MPI_INT, MPI_ANY_SOURCE, 2, MPI_COMM_WORLD, &status);
+			}
+
+			//barrier is used here since anysource is used.  This restricts it so only 1 message is getting sent to this processor
+			MPI_Barrier(MPI_COMM_WORLD);
+
+			//loop to do all calculations and add current sub matrix solution to the solution sub matrix C
+			//loops enough for the amount of needed shifts
+			for (int i = 0; i<numSubMatrixPerRow; i++)
+			{
+				//triple nest to do matrix multiplication for the current sub matrix set of a and b
+				for (int j=0; j<subMatrixDimension; j++)
+				{
+					for (int k=0; k<subMatrixDimension; k++)
+					{
+						for (int l=0; l<subMatrixDimension; l++)
+						{
+							subMatrixC[k+l*subMatrixDimension] += subMatrixA[l+j*subMatrixDimension] * subMatrixB[k+l*subMatrixDimension];
+						}
+					}
+				}
+
+				//current sub matrix calculated now calculate where each submatrix will get sent next
+				//send then receive A matrix first
+				//1 is used because each row shift is only 1 displacement in the processor mesh
+				if (taskid - (myRowPosition*numSubMatrixPerRow) - 1 < 0)
+				{
+					//checks to see if piece of data needs to reset to the right side of matrix
+					matrixADestination = taskid - 1 + numSubMatrixPerRow;
+				}
+				else
+				{
+					//no reset is needed, stays in same row
+					matrixADestination = taskid - 1;
+				}
+
+				//sends data for the A submatrix, then receives new data for the new submatrix
+				MPI_Send(subMatrixA, subMatrixDimension*subMatrixDimension, MPI_INT, matrixADestination, 1, MPI_COMM_WORLD);
+				MPI_Recv(subMatrixA, subMatrixDimension*subMatrixDimension, MPI_INT, MPI_ANY_SOURCE, 1, MPI_COMM_WORLD, &status);
+				
+				//barrier is used here since anysource is used.  This restricts it so only 1 message is getting sent to this processor
+				MPI_Barrier(MPI_COMM_WORLD);
+
+				//send and reverive B matrix
+				if (taskid - numSubMatrixPerRow < 0)
+				{
+					//if a wrap around is needed for the columns, resets it back up to the proper position
+					matrixBDestination = taskid - numSubMatrixPerRow + (numSubMatrixPerRow*numSubMatrixPerRow);
+				}
+				else
+				{
+					//no reset is needed
+					matrixBDestination = taskid - numSubMatrixPerRow;
+				}
+
+				//sends data for the B submatrix, then receives new data for the new submatrix
+				MPI_Send(subMatrixB, subMatrixDimension*subMatrixDimension, MPI_INT, matrixBDestination, 2, MPI_COMM_WORLD);
+				MPI_Recv(subMatrixB, subMatrixDimension*subMatrixDimension, MPI_INT, MPI_ANY_SOURCE, 2, MPI_COMM_WORLD, &status);
+
+				//barrier is used here since anysource is used.  This restricts it so only 1 message is getting sent to this processor
+				MPI_Barrier(MPI_COMM_WORLD);
+
+			}
+
+		}
+	}
+	std::cout << "end of program o.O" << std::endl;
+	//ends program
+	MPI_Finalize();
+}
+
+
+				/*
 				//test print sub matrices
 				std::cout << "subMatrixA# " << currentDistribution << std::endl;
 				for (int i=0; i<subMatrixDimension; i++)
@@ -198,16 +463,29 @@ int main(int argc, char* argv[])
 					std::cout << std::endl;
 				}
 				std::cout << std::endl;
+				*/
 
+			/*
+			 //reference to navigate array appropriately
+			std::cout << "Matrix A" << std::endl;
+			//test print A
+			for (int i=0; i<matrixDimension; i++)
+			{
+				for (int j=0; j<matrixDimension; j++)
+				{
+					std::cout << matrixA[j+i*matrixDimension] << " ";
+				}
+				std::cout << std::endl;
 			}
-		}
 
-		else if (taskid > 0)
-		{
-
-		}
-	}
-
-	//ends program
-	MPI_Finalize();
-}
+			std::cout << std::endl << "Matrix B" << std::endl;
+			//test print B
+			for (int i=0; i<matrixDimension; i++)
+			{
+				for (int j=0; j<matrixDimension; j++)
+				{
+					std::cout << matrixB[j+i*matrixDimension] << " ";
+				}
+				std::cout << std::endl;
+			}
+			*/
