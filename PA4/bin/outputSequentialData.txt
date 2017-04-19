@@ -58,3 +58,7 @@ Matrix Dimensions = 100
 RunTime = 0.00285554
 Matrix Dimensions = 100
 RunTime = 0.00421762
+Matrix Dimensions = 1000
+RunTime = 12.2951
+Matrix Dimensions = 1100
+RunTime = 17.6186
