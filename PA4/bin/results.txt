@@ -1,0 +1,12 @@
+
+Total Run Time: 10.718
+Matrix Dimensions: 2400
+Number of Processors: 9
+
+Total Run Time: 2.57852
+Matrix Dimensions: 2400
+Number of Processors: 25
+
+Total Run Time: 67.8408
+Matrix Dimensions: 5000
+Number of Processors: 25

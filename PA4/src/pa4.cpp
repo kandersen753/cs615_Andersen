@@ -133,7 +133,8 @@ int main(int argc, char* argv[])
 				matrixA[i] = (random()%100) + 1;
 				matrixB[i] = (random()%100) + 1;
 			}
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			/*
 			//reference to navigate array appropriately
 			std::cout << "Matrix A" << std::endl;
 			//test print A
@@ -157,6 +158,9 @@ int main(int argc, char* argv[])
 				std::cout << std::endl;
 			}
 
+			std::cout << std::endl;
+			*/
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 			//initialize all data in the solution sub matrix to 0
 			for (int i=0; i<subMatrixDimension*subMatrixDimension; i++)
@@ -164,6 +168,8 @@ int main(int argc, char* argv[])
 				subMatrixC[i] = 0;
 			}
 			
+
+			startTime = MPI_Wtime();
 			//loops to distribute to each sub matrix
 			//current col section represents which column of sub matrices we are looking at, while current row section
 			//is the row of sub matrices we are looking at, so 1,1 would be one row down, and one column in
@@ -239,8 +245,7 @@ int main(int argc, char* argv[])
 			//sends data for the A submatrix, then receives new data for the new submatrix
 			if (taskid != matrixADestination)
 			{			
-				MPI_Send(subMatrixA, subMatrixDimension*subMatrixDimension, MPI_INT, matrixADestination, 1, MPI_COMM_WORLD);
-				MPI_Recv(subMatrixA, subMatrixDimension*subMatrixDimension, MPI_INT, matrixAReceiver, 1, MPI_COMM_WORLD, &status);
+				MPI_Sendrecv_replace(subMatrixA, subMatrixDimension*subMatrixDimension, MPI_INT, matrixADestination, 1, matrixAReceiver, 1, MPI_COMM_WORLD, &status);
 			}			
 
 			//barrier is used here since anysource is used.  This restricts it so only 1 message is getting sent to this processor
@@ -278,9 +283,8 @@ int main(int argc, char* argv[])
 			//sends data for the B submatrix, then receives new data for the new submatrix
 			if (taskid != matrixBDestination)
 			{
-				MPI_Send(subMatrixB, subMatrixDimension*subMatrixDimension, MPI_INT, matrixBDestination, 2, MPI_COMM_WORLD);
-				MPI_Recv(subMatrixB, subMatrixDimension*subMatrixDimension, MPI_INT, matrixBreceiver, 2, MPI_COMM_WORLD, &status);
-			}
+				MPI_Sendrecv_replace(subMatrixB, subMatrixDimension*subMatrixDimension, MPI_INT, matrixBDestination, 2, matrixBreceiver, 2, MPI_COMM_WORLD, &status);
+			}			
 
 			//barrier is used here since anysource is used.  This restricts it so only 1 message is getting sent to this processor
 			MPI_Barrier(MPI_COMM_WORLD);
@@ -326,8 +330,7 @@ int main(int argc, char* argv[])
 				}
 
 				//sends data for the A submatrix, then receives new data for the new submatrix
-				MPI_Send(subMatrixA, subMatrixDimension*subMatrixDimension, MPI_INT, matrixADestination, 1, MPI_COMM_WORLD);
-				MPI_Recv(subMatrixA, subMatrixDimension*subMatrixDimension, MPI_INT, matrixAReceiver, 1, MPI_COMM_WORLD, &status);
+				MPI_Sendrecv_replace(subMatrixA, subMatrixDimension*subMatrixDimension, MPI_INT, matrixADestination, 1, matrixAReceiver, 1, MPI_COMM_WORLD, &status);
 				
 				//barrier is used here since anysource is used.  This restricts it so only 1 message is getting sent to this processor
 				MPI_Barrier(MPI_COMM_WORLD);
@@ -360,8 +363,7 @@ int main(int argc, char* argv[])
 				}
 
 				//sends data for the B submatrix, then receives new data for the new submatrix
-				MPI_Send(subMatrixB, subMatrixDimension*subMatrixDimension, MPI_INT, matrixBDestination, 2, MPI_COMM_WORLD);
-				MPI_Recv(subMatrixB, subMatrixDimension*subMatrixDimension, MPI_INT, matrixBreceiver, 2, MPI_COMM_WORLD, &status);
+				MPI_Sendrecv_replace(subMatrixB, subMatrixDimension*subMatrixDimension, MPI_INT, matrixBDestination, 2, matrixBreceiver, 2, MPI_COMM_WORLD, &status);
 
 				//barrier is used here since anysource is used.  This restricts it so only 1 message is getting sent to this processor
 				MPI_Barrier(MPI_COMM_WORLD);
@@ -371,14 +373,16 @@ int main(int argc, char* argv[])
 				currentColSection = 0;
 			}
 
+
 			for (int i=0; i<numtasks; i++)
 			{
-				std::cout << "sub matrix solution # " << i << std::endl;
+				//std::cout << "sub matrix solution # " << i << std::endl;
 				if (i!=taskid)
 				{
 					MPI_Recv(subMatrixC, subMatrixDimension*subMatrixDimension, MPI_INT, i, 0, MPI_COMM_WORLD, &status);
 				}
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+				/*
 				for (int j=0; j<subMatrixDimension*subMatrixDimension; j++)
 				{
 					if (j%subMatrixDimension == 0 && j != 0)
@@ -388,7 +392,14 @@ int main(int argc, char* argv[])
 					std::cout << subMatrixC[j] << " ";
 				}
 				std::cout << std::endl;
+				*/
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			}
+
+			endTime = MPI_Wtime() - startTime;
+			std::cout << std::endl << "Total Run Time: " << endTime << std::endl;
+			std::cout << "Matrix Dimensions: " << matrixDimension << std::endl;
+			std::cout << "Number of Processors: " << numtasks << std::endl;
 		}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -450,16 +461,13 @@ int main(int argc, char* argv[])
 				matrixAReceiver = taskid + myRowPosition;
 			}
 
-			//std::cout << "process # " << taskid << " initial left shift to " << matrixADestination << std::endl;
-
 			//sends data for the A submatrix, then receives new data for the new submatrix
 			if (taskid != matrixADestination)
 			{
-				MPI_Send(subMatrixA, subMatrixDimension*subMatrixDimension, MPI_INT, matrixADestination, 1, MPI_COMM_WORLD);
-				MPI_Recv(subMatrixA, subMatrixDimension*subMatrixDimension, MPI_INT, matrixAReceiver, 1, MPI_COMM_WORLD, &status);
+				MPI_Sendrecv_replace(subMatrixA, subMatrixDimension*subMatrixDimension, MPI_INT, matrixADestination, 1, matrixAReceiver, 1, MPI_COMM_WORLD, &status);
 			}
 
-			//barrier is used here since anysource is used.  This restricts it so only 1 message is getting sent to this processor
+			//Ensure all processes are at the same point, to keep synchonous running for safety
 			MPI_Barrier(MPI_COMM_WORLD);
 
 			//send and reverive B matrix
@@ -494,8 +502,7 @@ int main(int argc, char* argv[])
 			//sends data for the B submatrix, then receives new data for the new submatrix
 			if (taskid != matrixBDestination)
 			{
-				MPI_Send(subMatrixB, subMatrixDimension*subMatrixDimension, MPI_INT, matrixBDestination, 2, MPI_COMM_WORLD);
-				MPI_Recv(subMatrixB, subMatrixDimension*subMatrixDimension, MPI_INT, matrixBreceiver, 2, MPI_COMM_WORLD, &status);
+				MPI_Sendrecv_replace(subMatrixB, subMatrixDimension*subMatrixDimension, MPI_INT, matrixBDestination, 2, matrixBreceiver, 2, MPI_COMM_WORLD, &status);
 			}
 
 			//barrier is used here since anysource is used.  This restricts it so only 1 message is getting sent to this processor
@@ -542,8 +549,7 @@ int main(int argc, char* argv[])
 				}
 
 				//sends data for the A submatrix, then receives new data for the new submatrix
-				MPI_Send(subMatrixA, subMatrixDimension*subMatrixDimension, MPI_INT, matrixADestination, 1, MPI_COMM_WORLD);
-				MPI_Recv(subMatrixA, subMatrixDimension*subMatrixDimension, MPI_INT, matrixAReceiver, 1, MPI_COMM_WORLD, &status);
+				MPI_Sendrecv_replace(subMatrixA, subMatrixDimension*subMatrixDimension, MPI_INT, matrixADestination, 1, matrixAReceiver, 1, MPI_COMM_WORLD, &status);
 				
 				//barrier is used here since anysource is used.  This restricts it so only 1 message is getting sent to this processor
 				MPI_Barrier(MPI_COMM_WORLD);
@@ -575,11 +581,8 @@ int main(int argc, char* argv[])
 					matrixBreceiver = taskid + numSubMatrixPerRow;
 				}
 
-
-
 				//sends data for the B submatrix, then receives new data for the new submatrix
-				MPI_Send(subMatrixB, subMatrixDimension*subMatrixDimension, MPI_INT, matrixBDestination, 2, MPI_COMM_WORLD);
-				MPI_Recv(subMatrixB, subMatrixDimension*subMatrixDimension, MPI_INT, matrixBreceiver, 2, MPI_COMM_WORLD, &status);
+				MPI_Sendrecv_replace(subMatrixB, subMatrixDimension*subMatrixDimension, MPI_INT, matrixBDestination, 2, matrixBreceiver, 2, MPI_COMM_WORLD, &status);
 
 				//barrier is used here since anysource is used.  This restricts it so only 1 message is getting sent to this processor
 				MPI_Barrier(MPI_COMM_WORLD);
@@ -594,55 +597,3 @@ int main(int argc, char* argv[])
 	//ends program
 	MPI_Finalize();
 }
-
-
-				/*
-				//test print sub matrices
-				std::cout << "subMatrixA# " << currentDistribution << std::endl;
-				for (int i=0; i<subMatrixDimension; i++)
-				{
-					
-					for (int j=0; j<subMatrixDimension; j++)
-					{
-						std::cout << dataSenderA[j+i*subMatrixDimension] << " ";
-					}
-					std::cout << std::endl;
-				}
-				std::cout << std::endl;
-				std::cout << "subMatrixB# " << currentDistribution << std::endl;
-				for (int i=0; i<subMatrixDimension; i++)
-				{
-					
-					for (int j=0; j<subMatrixDimension; j++)
-					{
-						std::cout << dataSenderB[j+i*subMatrixDimension] << " ";
-					}
-					std::cout << std::endl;
-				}
-				std::cout << std::endl;
-				*/
-
-			/*
-			 //reference to navigate array appropriately
-			std::cout << "Matrix A" << std::endl;
-			//test print A
-			for (int i=0; i<matrixDimension; i++)
-			{
-				for (int j=0; j<matrixDimension; j++)
-				{
-					std::cout << matrixA[j+i*matrixDimension] << " ";
-				}
-				std::cout << std::endl;
-			}
-
-			std::cout << std::endl << "Matrix B" << std::endl;
-			//test print B
-			for (int i=0; i<matrixDimension; i++)
-			{
-				for (int j=0; j<matrixDimension; j++)
-				{
-					std::cout << matrixB[j+i*matrixDimension] << " ";
-				}
-				std::cout << std::endl;
-			}
-			*/
