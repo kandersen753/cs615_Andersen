@@ -40,8 +40,15 @@ To adjust how many processors you are running, adjust the 'n' value.  To adjust 
 Keep in mind that for every interval of 8 on 'n' there must be 1 corresponding 'N'.  i.e. if you want 25 processors, the values would be the following:
 '-n25' and '-N4'.  The value on line 7 next to the word pa4, represents the size of the matrix.  If the value entered is 400, the matrix will be of size 400x400.
 
-If you would like addiditional information on the matrix's and their calculations please uncomment lines 136-163, 379, and 384-396
+When making adjustments to the command line arguements, each argurment corresponds as follow:
+srun pa4 12 1 data >> ../bin/results.txt
 
+srun - is the execution command
+pa4 - is the executable file
+12 - is the dimension of the matrice. i.e. in this case a 12x12
+1 - tells the program to read data from a file no bigger than a 12x12, 0 generates numbers in the program
+data - name of the file to read data from
+>> ../bin/results.txt - appends data to the end of the text file in the bin folder in the results file
 
 If you would like to adjust the amount of data being processed on the sequential, open the bash file and adjust the srun line.
 
