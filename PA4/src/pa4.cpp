@@ -222,7 +222,7 @@ int main(int argc, char* argv[])
 			}
 			
 			//prints the original matrices
-			printOriginalMatrices(matrixA, matrixB, matrixDimension);
+			//printOriginalMatrices(matrixA, matrixB, matrixDimension);
 
 			startTime = MPI_Wtime();
 
@@ -282,7 +282,7 @@ int main(int argc, char* argv[])
 				}
 			}
 
-			std::cout << "Solution Matrix:" << std::endl;
+			/*std::cout << "Solution Matrix:" << std::endl;
 			for (int i=0; i<matrixDimension; i++)
 			{
 				for (int j=0; j<matrixDimension; j++)
@@ -290,7 +290,7 @@ int main(int argc, char* argv[])
 					std::cout << matrixC[j+i*matrixDimension] << " ";
 				}
 				std::cout << std::endl;
-			}
+			}*/
 
 			endTime = MPI_Wtime() - startTime;
 			std::cout << std::endl << "Total Run Time: " << endTime << std::endl;

@@ -1,0 +1,103 @@
+Total Run Time: 0.000447512
+Matrix Dimensions: 60
+Number of Processors: 4
+
+Total Run Time: 0.00159621
+Matrix Dimensions: 120
+Number of Processors: 4
+
+Total Run Time: 0.00933862
+Matrix Dimensions: 180
+Number of Processors: 4
+
+Total Run Time: 0.00944996
+Matrix Dimensions: 240
+Number of Processors: 4
+
+Total Run Time: 0.0143974
+Matrix Dimensions: 300
+Number of Processors: 4
+
+Total Run Time: 0.0267501
+Matrix Dimensions: 360
+Number of Processors: 4
+
+Total Run Time: 0.0435627
+Matrix Dimensions: 480
+Number of Processors: 4
+
+Total Run Time: 0.0980499
+Matrix Dimensions: 600
+Number of Processors: 4
+
+Total Run Time: 0.189731
+Matrix Dimensions: 720
+Number of Processors: 4
+
+Total Run Time: 0.472356
+Matrix Dimensions: 840
+Number of Processors: 4
+
+Total Run Time: 0.550109
+Matrix Dimensions: 960
+Number of Processors: 4
+
+Total Run Time: 0.667149
+Matrix Dimensions: 1080
+Number of Processors: 4
+
+Total Run Time: 0.77161
+Matrix Dimensions: 1200
+Number of Processors: 4
+
+Total Run Time: 1.68493
+Matrix Dimensions: 1320
+Number of Processors: 4
+
+Total Run Time: 1.77255
+Matrix Dimensions: 1440
+Number of Processors: 4
+
+Total Run Time: 8.79318
+Matrix Dimensions: 1660
+Number of Processors: 4
+
+Total Run Time: 18.5785
+Matrix Dimensions: 1880
+Number of Processors: 4
+
+Total Run Time: 25.4856
+Matrix Dimensions: 2000
+Number of Processors: 4
+
+Total Run Time: 33.6022
+Matrix Dimensions: 2120
+Number of Processors: 4
+
+Total Run Time: 38.3043
+Matrix Dimensions: 2240
+Number of Processors: 4
+
+Total Run Time: 51.9562
+Matrix Dimensions: 2360
+Number of Processors: 4
+
+Total Run Time: 55.2498
+Matrix Dimensions: 2480
+Number of Processors: 4
+
+Total Run Time: 70.0454
+Matrix Dimensions: 2600
+Number of Processors: 4
+
+Total Run Time: 72.9741
+Matrix Dimensions: 2720
+Number of Processors: 4
+
+Total Run Time: 84.9063
+Matrix Dimensions: 2840
+Number of Processors: 4
+
+Total Run Time: 97.4042
+Matrix Dimensions: 2960
+Number of Processors: 4
